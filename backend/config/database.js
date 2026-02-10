@@ -45,7 +45,7 @@ const sequelize = new sequelize (
     }    
 );
 
-/*funcion para ptobar la conexion de la base de datos esta funcion de llamara al iniciar el server */
+/*funcion para probar la conexion de la base de datos esta funcion de llamara al iniciar el server */
 const testConnection = async () => {
     try{
         //intenta autenticar con la db
@@ -56,6 +56,38 @@ const testConnection = async () => {
         console.error('x error al conectar con myql:', error.message);
         console.error('verifica que xampp este corriendo y las credenciales en .env sean correctas');
         return false;
-        
+
     }
-}
+};
+
+/*
+/**fucion para sincronizar los modelos con la base de datos *esta funcion creara las tablas auto basandose en los modelos 
+@param {bolean} force - si es true, elimina y recrea todas las tablas
+@param {bolean} alter - si es true, modifica las tablas existentes para que coinsidan con los modelos
+*/
+
+const syncDataBase = async (force = false, alter = false) => {
+    try{
+        //sincronizar todos los modelos con la db
+        await sequelize.sync({force, alter});
+        if(force) {
+            console.log('db sincronizada (todas las tablas recreadas)');
+        } else if (alter) {
+            console.log('db sincronizada (tablas alteradas segun los modelos)'); 
+        } else {
+            console.log('db sincronizada correectamente');
+        }
+
+        return true;
+    } catch (error) {
+        console.error('x error al sincronizar la db:', error.message);
+        return false;
+    }
+};
+
+// exportar la intancia de sequelize y las funciones
+module.exports = {
+    sequelize,
+    testConnection,
+    syncDataBase
+};
