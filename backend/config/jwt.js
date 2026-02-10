@@ -39,15 +39,54 @@ const generateToken = (payload) => {
 
 /**
  * verificar si un token es valido
- * 
- * @param {String} token - token jwt a verificar
+ * 01
+ * @param {String} tokenHeader - token jwt a verificar
  * @returns {Object} datos decodificado si el token es valido
  * @throws {Error} si el token no es valido o ha expirado
  */
 
-const extractTokenData = (tokenHeader) => {
+const verifyToken = (tokenHeader) => {
+    try {
+        //jwt.verify() verifica la firma del token y decodifica
+        //parametros:
+        //1. token: el token jwt a verificar
+        //2. secret: la misma clave secreta usada para firmarlo
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded;
+        }catch (error) {
+
+          //diferentes tipos de errores
+          if (error.name === 'TokenExpiredError') {
+            throw new Error('El token ha expirado');
+            } else if (error.name === 'JsonWebTokenError') {
+            throw new Error('Token invalido');
+            } else {
+                throw new Error('Error al verificar el token');
+      }
+    }
+};
+
+/**
+ * extraer el token de un header de autorizacion
+ * el token viene en formato 'Bearer <token>'
+ * 
+ * @param {String} authHeader - header de autorizacion de la peticion
+ * @returns {String|null} el token extraido o null si no existe
+ */
+
+const extractToken = (authHeader) => {
     // verifica que el header existe y empieza con 'Bearer '
     if (authHeader && authHeader.startsWith('Bearer ')) {
-        
+        // extraer solo el token (quitar 'Bearer ')
+        return authHeader.substring(7);
     }
-}
+
+    return null; // no se encontro un token valido
+};
+
+//exportar las funciones para usarlas en otras partes del proyecto
+module.exports = {
+    generateToken,
+    verifyToken,
+    extractToken
+};
