@@ -69,3 +69,65 @@ const storage = multer.diskStorage({
  * @param {Object} file - archivo que se esta subiendo 
  * @param {Function} cb - callback que se llama con (error, acceptfile)
  */
+const fileFilter = (req, file, cb) => {
+    //tipos mime permitidos para imagenes
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+
+    //verifiicar si el tipo de archivo esta en la lista permitida
+    if (allowedMimeTypes.includes(file.mimetype)) {
+        //cb(null, true) -> aceptar archivo
+        cb(null, true);
+    } else {
+        //cb(error) -> rechazar archivo con error
+        cb(new Error('Solo se permiten imagenes (jpg, jpeg, png, gif).'), false);
+    }
+};
+
+/**
+ * cofigurar multer con las opciones definidas
+ */
+
+const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: { 
+        //limite de tamaño del archivo en bytes
+        //por defecto 5MB (5 * 1024) 5242800 bytes
+        fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5242800
+    }
+});
+
+/**
+ * funcion para eliminar el archivo del servidor
+ * util cuando se actualiza o elimina el producto
+ * 
+ * @param {String} filename - nombre del archivo a eliminar
+ * @return {Boolean} true si se elimino correctamente, false si hubo un error
+ */
+
+const deleteFile = (filename) => {
+    try {
+        //construir la ruta completa del archivo
+        const filePath = path.join(uploadPath, filename);
+
+        //vrificar si el archivo existe
+        if (fs.existsSync(filePath)) {
+            //eliminar el archivo
+            fs.unlinkSync(filePath);
+            console.log(`Archivo eliminado: ${filename} `);
+            return true;
+        } else {
+            console.log(`Archivo no encontrado: ${filename}`);
+            return false;
+        }
+    } catch (error) {
+        console.error(`Error al eliminar el archivo;`, error.message);
+        return false;
+    }
+};
+
+//exportar configuracion de multer y funcion de eliminacion
+module.exports = {
+    upload,
+    deleteFile
+};
