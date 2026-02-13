@@ -3,6 +3,7 @@
  * define la tabla subcategoria en la base de datos
  * almacena las subcategorias principales de los productos
  */
+
 //importar datatypes de sequelize
 const { DataTypes } = require('sequelize');
 
@@ -14,7 +15,7 @@ const { type } = require('os');
 /**
  * definir modelo subcategoria
  */
-const subcategoria = sequelize.define('Categoria', {
+const subcategoria = sequelize.define('subcategoria', {
     //campos de la tabla 
     //id identificador unico (primary key)
     id: {
@@ -133,7 +134,7 @@ const subcategoria = sequelize.define('Categoria', {
             if (subcategoria.changed('activo') && !subcategoria.activo) {
                 console.log(`desactivando categoria: ${subcategoria.nombre}`);
 
-                //importar modelos (aqui para evitar dependencias circulares
+                //importar modelos (aqui para evitar dependencias circulares)
                 const producto = require('./producto');
 
                 try {

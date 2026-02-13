@@ -14,7 +14,7 @@ const { table } = require('console');
 /**
  * definir modelo categoria
  */
-const categoria = sequelize.define('Categoria', {
+const categoria = sequelize.define('categoria', {
     //campos de la tabla 
     //id identificador unico (primary key)
     id: {
