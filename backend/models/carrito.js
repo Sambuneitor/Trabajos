@@ -108,7 +108,6 @@ const carrito = sequelize.define('carrito', {
             name: 'usuario_producto_unique'
         }
     ],
-},
 
     /**
      * hooks acciones automaticas 
@@ -176,6 +175,9 @@ subcategoria.prototype.contarproductos = async function () {
     const producto = require('./producto');
     return await producto.count({ where: { subcategoriaId: this.id } });
 };
+},
+
+
 
     nombre: {
         type: DataTypes.STRING(100),
