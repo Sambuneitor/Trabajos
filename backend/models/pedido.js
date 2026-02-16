@@ -1,7 +1,7 @@
 /**
- * modelo carrito
- * define la tabla carrito en la base de datos
- * almacena los productos que cada usuario ha agregado a su carrito 
+ * modelo pedido
+ * define la tabla pedido en la base de datos
+ * almacena la informacion de los pedidos realizados por los usuarios
  */
 
 //importar datatypes de sequelize
@@ -9,12 +9,12 @@ const { DataTypes } = require('sequelize');
 
 //importar instancia de sequelize
 const { sequelize } = require('../config/database');
-const producto = require('./producto');
+
 
 /**
- * definir modelo carrito
+ * definir modelo de pedido
  */
-const carrito = sequelize.define('carrito', {
+const pedido = sequelize.define('pedido', {
     //campos de la tabla 
     //id identificador unico (primary key)
     id: {
@@ -24,7 +24,7 @@ const carrito = sequelize.define('carrito', {
         allowNull: false
     },
 
-    //usuarioId ID del usuario dueño del carrito
+    //usuarioId ID del usuario que realizo el pedido
     usuarioId :{
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -33,7 +33,7 @@ const carrito = sequelize.define('carrito', {
             key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE', //si se elimina el usuario se elimina su carrito
+        onDelete: 'RESTRICT', // no se puede eliminar un usuario con pedidos
         validate: {
             notNull: {
                 msg: 'debe epecificar un usuario'
@@ -41,7 +41,41 @@ const carrito = sequelize.define('carrito', {
         }
     },
 
-    //productoId ID del producto en el carrito
+    // total monto total del pedido
+    total: {
+        typra: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        validate: {
+            isDecimal: {
+                msg: 'el total debe ser unn numero decimal valido'
+            },
+            min: {
+                args: [0],
+                msg: 'el total no puede ser negativo'
+            }
+        }
+    },
+
+    /**
+     * estado - estado actual del pedido
+     * valores posibles:
+     * pendiente: pedido creado esperando pago
+     * pagado: pedido pagado en preparacion
+     * enviado: pedido enviado al cliente
+     * cancelado: pedido cancelado
+     */
+    estado: {
+        type: DataTypes.ENUM('pendiente', 'pagado', 'enviado', 'cancelado'),
+        allowNull: false,
+        defaultValue: 'pendiente',
+        validate: {
+            isIn: {
+                args: [['pendiente', 'pagado', 'enviado', 'cancelado']],
+            }
+        }
+    },
+
+    //productoId ID del producto en el pedido
     productoId :{
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -56,6 +90,34 @@ const carrito = sequelize.define('carrito', {
                 msg: 'debe epecificar un producto'
             }
         }
+    },
+
+    //direccion de envio del pedido
+    direccionEnvio:{
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+            notNull: {
+                msg: 'la direccion de envio es obligatoria'
+            }
+        }
+    },
+
+    //telefono de contacto para el envio
+    telefonoContacto: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        validate: {
+            notEmpty: {
+                msg: 'el telefono es obligatorio'
+            }
+        }
+    },
+
+    //notas adicionales del pedido()
+    notas: {
+        type: DataTypes.TEXT,
+        allowNull: true
     },
 
     //cantidad de este producto en el carrito
