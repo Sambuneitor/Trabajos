@@ -9,8 +9,6 @@ const { DataTypes } = require('sequelize');
 
 //importar instancia de sequelize
 const { sequelize } = require('../config/database');
-const { table } = require('console');
-const { type } = require('os');
 
 /**
  * definir modelo subcategoria
