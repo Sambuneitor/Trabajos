@@ -149,7 +149,7 @@ const pedido = sequelize.define('pedido', {
             },
             min: {
                 arg: [0],
-                msg: 'el precio no puede der negativo'
+                msg: 'el precio no puede ser negativo'
             }
         }
     }
