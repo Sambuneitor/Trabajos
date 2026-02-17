@@ -1,5 +1,5 @@
 /**
- * modelo prosucto
+ * modelo producto
  * define la tabla producto en la base de datos
  * almacena los productos
  */
