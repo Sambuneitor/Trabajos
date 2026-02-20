@@ -12,6 +12,7 @@ const categoria = require('../models/categoria');
 const subcategoria = require('../models/subcategoria');
 const producto = require('../models/producto');
 
+
 /**
  * obtener todas las categorias 
  * query params:
@@ -291,7 +292,7 @@ const toggleCategoria = async (req, res) => {
         const subcategoriasAfectadas = await subcategoria.count({where: {categoriaId: id}
         });
 
-                const productosAfectados = await producto.count({where: {categoriaId: id}
+        const productosAfectados = await producto.count({where: {categoriaId: id}
         });
 
         //respuesta exitosa
