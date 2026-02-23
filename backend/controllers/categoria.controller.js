@@ -84,7 +84,7 @@ const getCategoriasById = async (req, res) => {
             include: [{
                 model: subcategoria,
                 as: 'subcategorias',
-                attributes: ['id', 'nombre', 'descripcion', 'activoo']
+                attributes: ['id', 'nombre', 'descripcion', 'activo']
             },
             {
                 model: producto,
