@@ -449,7 +449,8 @@ const getEstadisticasCategoria = async (req, res) => {
                 estadisticas: {
                     Subcategorias: {
                         total: totalSubcategorias,
-                        activas: subcategoriasActivas
+                        activas: subcategoriasActivas,
+                        inactivas: totalSubcategorias - subcategoriasActivas
                     },
                     productos: {
                         total: totalProductos,
