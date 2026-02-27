@@ -101,7 +101,7 @@ const getProductos = async (req, res) => {
  * @param {Object} res response express 
  */
 
-const getProductosById = async (req, res) => {
+const getProductoById = async (req, res) => {
     try {
         const {id} = req.params;
 
@@ -482,7 +482,7 @@ const toggleProducto = async (req, res) => {
 /**
  * eliminar producto 
  * DELETE /api/admin/productos/:id
- * solo permite eliminar si no tiene productos relacionados
+ * elimina el producto y su imagen 
  * @param {Object} req request express
  * @param {Object} res request express
  */
@@ -500,7 +500,7 @@ const eliminarProducto = async (req, res) => {
                 });
             }
 
-            //eliminar producto
+            //el hook beforDestroy se encarga de eliminar la imagen
             await producto.destroy();
 
             //respuesta exitosa 
@@ -520,88 +520,85 @@ const eliminarProducto = async (req, res) => {
 };
 
 /**
- * obtener estadisticas de un producto 
- * GET /api/admin/productos/:id/estadisticas
- * retorna
- * total de subcategorias activos / inactivos
- * total de productos activos / inactivos
- * valor total del inventario
- * stock total
+ * actualizar stok de un producto
+ * 
+ * PATCH /api/admin/productos/:id/stock
+ * body: {cantidad, operacion: 'aumentar' | 'reducir' | 'establecer'}
  * @param {Object} req request express
- * @param {Object} res request express
+ * @param {Object} res response express 
  */
-
-const getEstadisticasProducto = async (req, res) => {
+const actualizarStock = async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
+        const { cantidad, operacion } = req.body;
 
-        //verificar que la subcategoria exista
-        const subcategoria = await subcategoria.findByPk(id [{
-            include: [{
-                model: categoria,
-                as: 'categoria',
-                attributes: ['id', 'nombre']
-            }]
-        }]);
-
-        if (!subcategoria) {
-            return res.status(404).json({
+        if (!cantidad || !operacion) {
+            return res.status(400).json({
                 success: false,
-                message: 'subcategoria no encontrada'
+                message: 'se requiere cantidad y operacion'
             });
         }
 
-        //contar productos
-        const totalProductos = await producto.count({
-            where: {subcategoriaId: id}
-        });
-        const productosActivos = await producto.count({
-            where: {subcategoriaId:  id, activo: true}
-        });
+        const cantidadNum = parseInt(cantidad);
+        if (cantidadNum < 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'la cantidad no puede ser negariva'
+            });
+        }
+        const producto = await producto.findByPk(id);
 
-        //obtener productos para calcular estadisticas
-        const productos = await producto.findAll({
-            where: {subcategoria: id},
-            attributes: ['precio', 'stock']
-        });
+        if(!producto) {
+            return res.status(404).json({
+                success: false,
+                message: 'producto no encontrado'
+            });
+        }
 
-        //calcular estadisticas de inventario
-        let valorTotalInventario = 0;
-        let stockTotal = 0;
+        let nuevoStock;
 
-        productos.forEach(producto => {
-            valorTotalInventario += parseFloat(producto.precio) * producto.stock;
-        });
+        switch (operacion) {
+            case 'aumentar':
+                nuevoStock = producto.aumentarStock(cantidadNum);
+                break;
+                case 'reducir':
+                    if (cantidadNum > producto.stock) {
+                        return res.status(400).json({
+                            success: false,
+                            message: `no hay suficiente stock. stock actual: ${producto.stock}`
+                        });
+                    }
+                    nuevoStock = producto.reducirStock(cantidadNum);
+                    break;
+                case 'establecer':
+                    nuevoStock = cantidadNum;
+                    break;
+                default:
+                    return res.status(400).json({
+                        success: false,
+                        message: 'operacion invalida usa aumentar, reducir o establecer'
+                    });
+        }
 
-        //respuesta exitosa
+        producto.stock = nuevoStock;
+        await  producto.save();
+
         res.json({
             success: true,
+            message: `stock ${operacion === 'aumentar' ? 'aumentado' : operacion === 'reducir' ? 'reducido' : 'establecido'} exitosamente`,
             data: {
-                subcategoria: {
-                id: subcategoria.id,
-                nombre: subcategoria.nombre,
-                activo: subcategoria.activo,
-                categoria: subcategoria.categoria
-                },
-                estadisticas: {
-                    productos: {
-                        total: totalProductos,
-                        activas: productosActivos,
-                        inactivas: totalProductos - productosActivos
-                    },
-                    inventario: {
-                        stockTotal,
-                        valorTotal: valorTotalInventario.toFixed(2) //quitar decimales
-                    }
-                }
-            },
+                productoId: producto.id,
+                nombre: producto.nombre,
+                stockAnterior: operacion === 'establecer' ? null : (operacion === 'aumentar' ? producto.stock - cantidadNum : producto.stock + cantidadNum),
+                stockNuevo: producto.stock
+            }
         });
 
     } catch (error) {
-        console.error('error en getEstadisticasSubcategoria', error);
+        console.error('error en actualizarStock: ', error);
         res.status(500).json({
             success: false,
-            message: 'error al obtener estadisticas',
+            message: 'error al actualizar stock',
             error: error.message
         });
     }
@@ -610,10 +607,10 @@ const getEstadisticasProducto = async (req, res) => {
 //exportar todos los controladores
 module.exports = {
     getProductos,
-    getProductosById,
+    getProductoById,
     crearProducto,
     actualizarProducto,
     toggleProducto,
     eliminarProducto,
-    getEstadisticasProducto
+    actualizarStock,
 };
