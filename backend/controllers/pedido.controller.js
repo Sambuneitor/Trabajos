@@ -72,11 +72,331 @@ const crearPedido = async (req, res) => {
             });
         }
 
+        //verificar stock y productos activos
+        const erroresValidation = [];
+        let totalPedido = 0;
+
+        for (const item of itemsCarrito) {
+            const producto = item.producto;
+
+            //verificar queee el producto este activo
+            if (!producto.activo) {
+                erroresValidation.push(`${producto.nombre} ya no esta disponible`);
+                continue;
+            }
+
+            //verificar stock suficiente
+            if (itemCantidad > producto.stock) {
+                erroresValidation.push(`${producto.nombre}: stock insuficiente (disponible: ${producto.stock}, solicitado: ${item.cantidad})`);
+                continue;
+            }
+
+            //calcular total
+            totalPedido += parseFloat(item.precioUnitario) * item.cantidad;
+        }
+
+        //ahi hay errores de validacion retornar
+        if (erroresValidation.length > 0) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: 'error en validacion de carrito',
+                errores: erroresValidation
+            });
+        }
+
+        //crear pedido
+        const pedido = await pedido.create({
+            usuarioId: req.user.usuarioId,
+            total: totalPedido,
+            estado: 'pendiente',
+            direccionEnvio,
+            telefono,
+            metodoPago,
+            notasAdicionales
+        }, {transaction: t});
+
+        //crear detalles del pedido y actualizar stock
+
+        const detallesPedido = [];
+
+        for (const item of itemsCarrito) {
+            const producto = item.producto;
+            
+            //crear detalle
+            const detalle = await detallePedido.create({
+                pedidoId: pedido.id,
+                productoId: producto.id,
+                cantidad: item.cantidad,
+                precioUnitario: item.precioUnitario,
+                subtotal: parseFloat(item.precioUnitario) * item.cantidad
+            }, { transaction: t });
+
+            detallesPedido.push(detalle);
+
+            //reducir stock del producto
+            producto.stock -= item.cantidad;
+            await producto.save({ transaction: t });
+        }
+
+        //vaciar carrito
+        await carrito.destroy({
+            where: { usuarioId: req.usuario.id },
+            transaction: t
+        });
+
+        //confirmar transaccion
+        await t.commit();
+
+        //cargar pedido con relaciones
+        await pedido.reload({
+            include: [
+                {
+                    model: usuario,
+                    as: 'usuario',
+                    attributes: ['id', 'nombre', 'email']
+                },
+                {
+                    model: detallePedido,
+                    as: 'detalles',
+                    include: [{
+                        model: producto,
+                        as: 'producto',
+                        attributes: ['id', 'nombre', 'precio', 'imagen']
+                    }]
+                }
+            ]
+        });
+
+        //respuesta exitosa
+        res.status(201).json({
+            success: true,
+            message: 'el pedido se a creado exitosamente',
+            data: {
+                pedido
+            }
+        });
+
     } catch (error) {
+        //revertir transaccion en caso de error
+        await t.rollback();
         console.error('error en crearPedido', error);
         return res.status(500).json({
             success: false,
             message: 'error al crear pedido',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * obtener pedidos del cliente autenticado
+ * GET /api/cliente/pedidos
+ * query: ?estado=pendiente&pagina=1&limite=10
+ */
+
+const getMisPedidos = async(req, res) => {
+    try{
+        const { estado, pagina = 1, limite = 10 } = req.query;
+
+        //filtros
+        const where = { usuarioId: req.usuario.id };
+        if (estado) where.estado = estado;
+
+        //paginacion
+        const offset = (parseInt(pagina) - 1) * parseInt(limite);
+
+        //consultar pedidos
+        const { count, rows: pedidos } = await pedido.findAndCountAll({
+            where,
+            include: [
+                {
+                    model: detallePedido,
+                    as: 'detalles',
+                    include: [{
+                        model: producto,
+                        as: 'producto',
+                        attributes: ['id', 'nombre', 'precio', 'imagen']
+                    }]
+                }
+            ],
+            limit: parseInt(limite),
+            offset,
+            order: [['createAt', 'DESC']]
+        });
+
+        //respuesta exitosa
+        res.json({
+            success: true,
+            data: {
+                pedidos,
+                paginacion: {
+                    total: count,
+                    pagina: parseInt(pagina),
+                    limite: parseInt(limite),
+                    totalPaginas: Math.ceil(count / parseInt(limite))
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('error en getMisPedidos', error);
+        return res.status(500).json({
+            success: false,
+            message: 'error al obtener los pedidos',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * obtener un pedido especifico por ID
+ * GET /api/cliente/pedidos/:id
+ * solo puede ver sus pedidos admin todos
+ */
+
+const getPedidoById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        //construir filtros (cliente solo ve sus pedidos admin ve todos)
+        const where = { id };
+        if (req.usuario.rol !== 'administrador') {
+            where.usuarioId = req.usuario.id;
+        }
+
+        //buscar pedido
+        const pedido = await pedido.findOne({
+            where,
+            include: [
+                {
+                    model: usuario,
+                    as: 'usuario',
+                    attributes: ['id', 'nombre', 'email']
+                },
+                {
+                    model: detallePedido,
+                    as: 'detalles',
+                    include: [{
+                        model: producto,
+                        as: 'producto',
+                        attributes: ['id', 'nombre', 'precio', 'imagen'],
+                        include: [
+                            {
+                                model: categoria,
+                                as: 'categoria',
+                                attributes: ['id', 'nombre']
+                            },
+                            {
+                                model: subcategoria,
+                                as: 'subcategoria',
+                                attributes: ['id', 'nombre']
+                            }
+                        ]
+                    }]
+                }
+            ]
+        });
+
+        if (!pedido) {
+            return res.status(404).json({
+                success: false,
+                message: 'pedido no encontrado'
+            });
+        }
+
+        //respuesta exitosa
+        res.json({
+            success: true,
+            data: {
+                pedido
+            }
+        });
+
+    } catch (error) {
+        console.error('error en getPedidoById', error);
+        return res.status(500).json({
+            success: false,
+            message: 'error al obtener el pedido',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * cancelar pedido
+ * PUT /api/cliente/pedidos/:id/cancelar
+ * solo se puede cancelar si el estado es pendiente 
+ * devuelve el stock a los productos 
+ */
+
+const cancelarPedido = async (req, res) => {
+    const { sequelize } = require('../config/database');
+    const t = await sequelize.transaction();
+
+    try {
+        const { id } = req.params;
+
+        //buscar pedido solo los propios pedidos
+        const pedido = await pedido.findOne({
+            where: {
+                id,
+                usuarioId: req.usuario.id
+            },
+            include: [{
+                model: detallePedido,
+                as: 'detalles',
+                include: [{
+                    model: producto,
+                    as: 'producto'
+                }]
+            }],
+            transaction: t
+        });
+
+        if (!pedido) {
+            await t.rollback();
+            return res.status(404).json({
+                success: false,
+                message: 'pedido no encontrado'
+            });
+        }
+        //solo se puede cancelar si esta en pendiente
+        if (pedido.estado !== 'pendiente') {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: `no se puede cancelar un pedido en estado '${pedido.estado}'` 
+            });
+        }
+
+        //devolver stock de los productos
+        for (const detalle of pedido.detalles) {
+            const producto = detalle.producto;
+            producto.stock += detalle.cantidad;
+            await producto.save({ transaction: t });
+        }
+
+        //actualizar estado del pedido
+        pedido.estado = 'cancelado';
+        await pedido.save({ transaction: t });
+
+        await t.commit();
+
+        //respuesta exitosa
+        res.json({
+            success: true,
+            message: 'pedido cancelado exitosamente',
+            data: {
+                pedido
+            }
+        });
+
+    } catch (error) {
+        await t.rollback();
+        console.error('error en cancelarPedido', error);
+        return res.status(500).json({
+            success: false,
+            message: 'error al caneclar el pedido',
             error: error.message
         });
     }
