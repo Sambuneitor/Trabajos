@@ -396,8 +396,208 @@ const cancelarPedido = async (req, res) => {
         console.error('error en cancelarPedido', error);
         return res.status(500).json({
             success: false,
-            message: 'error al caneclar el pedido',
+            message: 'error al cancelar el pedido',
             error: error.message
         });
     }
+};
+
+/**
+ * admin obtener todos los pedidos
+ * GET /api/admin/pedidos
+ * query ?estado=pendiente&usuarioId=1&pagina=1&limite=10
+ */
+const getAllPedidos = async (req, res) => {
+    try {
+        const {estado, usuarioId, pagina = 1, limite = 20} = req.query;
+
+        //filtros
+        const where = {};
+        if (estado) where.estado = estado;
+        if (usuarioId) where.usuarioId = usuarioId;
+
+        //paginacion
+        const offset = (parseInt(pagina) - 1) * parseInt(limite);
+
+        //consultar pedidos
+        const {count, rows: pedidos } = await pedido.findAndCountAll({
+            where,
+            include: [
+                {
+                    model: usuario,
+                    as: 'usuario',
+                    attributes: ['id', 'nombre', 'email']
+                },
+                {
+                    model: detallePedido,
+                    as: 'detalles',
+                    include: [{
+                        model: producto,
+                        as: 'producto',
+                        attributes: ['id', 'nombre', 'imagen']
+                    }]
+                }
+            ],
+            limit: parseInt(limite),
+            offset,
+            order: [['createAt', 'DESC']]
+        });
+
+        //respuesta exitosa
+        res.json({
+            success: true,
+            data: {
+                pedidos,
+                paginacion: {
+                    total: count,
+                    pagina: parseInt(pagina),
+                    limite: parseInt(limite),
+                    totalPaginas: Math.ceil(count / parseInt(limite))
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('error en getAllPedidos', error);
+        return res.status(500).json({
+            success: false,
+            message: 'error al obtener los pedidos',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * admin actualizar estado del pedido
+ * PUT /api/admin/pedidos/:id/estado
+ * body: {estado}
+ */
+
+const actualizarEstadoPedido = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { estado } = req.body;
+
+        //validar estado
+        const estadosValidos = ['pendiente', 'enviado', 'entregado', 'cancelado'];
+        if (!estadosValidos.includes(estado)) {
+            return res.status(400).json({
+                success: false,
+                message: `estado invalido, opciones: ${estadosValidos.json(',')}`
+            });
+        }
+
+        //buscar pedido
+        const pedido = await pedido.findByPk(id);
+        if (!pedido) {
+            return res.status(404).json({
+                success: false,
+                message: 'pedido no encontrado'
+            });
+        }
+
+        //actualizar estado
+        pedido.estado = estado;
+        await pedido.save();
+
+        //recargar con relaciones
+        await pedido.reload({
+            include: [
+                {
+                    model: usuario,
+                    as: 'usuario',
+                    attributes: ['id', 'nombre', 'email']
+                }
+            ]
+        });
+
+        //respuesta exitosa
+        res.json({
+            success: true,
+            message: 'estado del pedido actualizado',
+            data: {
+                pedido
+            }
+        });
+
+    } catch (error) {
+        console.error('error en actualizarEstadoPedido', error);
+        return res.status(500).json({
+            success: false,
+            message: 'error al actualizar el estado del pedido',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * obtener estadisticas de pedidos
+ * GETTT /api/admin/pedidos/estadisticas
+ */
+
+const getEstadisticasPedidos = async (req, res) => {
+    try {
+        const { Op, fn, col } = require('sequelize');
+
+        //total de pedidos
+        const totalPedidos = await pedido.count();
+
+        //pedidos estado
+        const pedidosPorEstado = await pedido.findAll({
+            attributes: [
+                'estado',
+                [fn('COUNT', col('id')), 'cantidad']
+                [fn('SUM', col('total')), 'totalVentas']
+            ],
+            group: ['estado']
+        });
+
+        //total ventas
+        const totalVentas = await pedido.sum('total');
+
+        //pedidos hoy
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        const pedidosHoy = await pedido.count({
+            where: {
+                createdAt: { [Op.gte]: hoy } //pedidos ultimos 7 dias
+            }
+        });
+
+        //respuesta exitosa
+        res.json({
+            success: true,
+            data: {
+                totalPedidos,
+                pedidosHoy,
+                ventasTotales: parseFloat(totalVentas || 0).toFixed(2),
+                pedidosPorEstado: pedidosPorEstado.map(p => ({
+                    estado: p.estado,
+                    cantidad: parseInt(p.getDataValue('cantidad')),
+                    totalVentas: parseFloat(p.getDataValue('totalVentas') || 0).toFixed(2)
+                }))
+            }
+        });
+
+    } catch (error) {
+        console.error('error en getEstadisticasPedidos', error);
+        return res.status(500).json({
+            success: false,
+            message: 'error al obtener las estadisticas',
+            error: error.message
+        });
+    }
+};
+
+//exportar controladores
+module.exports = {
+    //cliente
+    crearPedido,
+    getMisPedidos,
+    getPedidoById,
+    cancelarPedido,
+    //admin
+    actualizarEstadoPedido,
+    getEstadisticasPedidos
 };
