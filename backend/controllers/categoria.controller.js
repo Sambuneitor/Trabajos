@@ -62,7 +62,8 @@ const getCategorias = async (req, res) => {
         console.error('error en getCategorias:', error);
         res.status (500).json({
             success: false,
-            message: 'error al obtener categorias', error: error.message
+            message: 'error al obtener categorias', 
+            error: error.message
         })
     }
 };
@@ -118,7 +119,8 @@ const getCategoriasById = async (req, res) => {
         console.error('error en getCategoriasById:', error);
         res.status (500).json({
             success: false,
-            message: 'error al obtener categoria', error: error.message
+            message: 'error al obtener categoria', 
+            error: error.message
         })
     }
 };
