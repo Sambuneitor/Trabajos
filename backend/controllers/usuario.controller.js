@@ -9,9 +9,6 @@
  */
 
 const usuario = require('../models/usuario');
-const usuario = require('../models/usuario');
-const usuario = require('../models/usuario');
-
 
 /**
  * obtener todos los usuarios
@@ -261,214 +258,140 @@ const actualizarUsuario = async (req, res) => {
 };
 
 /**
- * activar/desactivar categoria
- * PATCH /api/admin/categorias/:id/estado
+ * activar/desactivar usuario
+ * PATCH /api/admin/usuarios/:id/estado
  * 
- * al desactivar una categoria se desactivan todas las subcategorias relacionadas
- * al desactivar una subcategoria se desactivan todos los productos relacionados
+ * al desactivar un usuario
  * @param {Object} req request express
  * @param {Object} res response express
  */
-const toggleCategoria = async (req, res) => {
+const toggleUsuario = async (req, res) => {
     try {
         const {id} = req.params;
 
-        //buscar categoria
-        const categoria = await categoria.findByPk (id);
+        //buscar usuairo
+        const usuario = await usuario.findByPk (id);
 
-        if (!categoria) {
+        if (!usuario) {
             return res.status(404).json({
                 success: false,
-                message: 'categoria no encontrada'
+                message: 'usuario no encontrado'
+            });
+        }
+        //no permitir desactivar el propio admin
+        if (usuario.id === req.usuario.id) {
+            return res.status(400).json({
+                success: false,
+                message: 'no puedes desactivar tu propia cuenta'
             });
         }
 
-        //alternar estado activo
-        const nuevoEstado = !categoria.activo;
-        categoria.activo = nuevoEstado;
-        
-        //guardar cambios
-        await categoria.save();
+        usuario.activo = !usuario.activo;
+        await usuario.save();
 
-        //contar cuantos registros se afectaron
-        const subcategoriasAfectadas = await subcategoria.count({where: {categoriaId: id}
-        });
-
-        const productosAfectados = await producto.count({where: {categoriaId: id}
-        });
-
-        //respuesta exitosa
         res.json({
             success: true,
-            message: `categoria ${nuevoEstado ? 'activada' : 'desactivada'} exitosamente`,
+            message: `usuario ${usuario.activo ? 'activado' : 'desactivado'} exitosamente`,
             data: {
-                categoria,
-                afectados: {
-                    subcategorias: subcategoriasAfectadas,
-                    productos: productosAfectados
-                }
+                usuario: usuario.toJSON()
             }
         });
 
     } catch (error) {
-        console.error('error en toggleCategoria:', error);
+        console.error('error en toggleUsuario:', error);
         res.status(500).json({
             success: false,
-            message: 'error al cambiar estado de la categoria',
+            message: 'error al cambiar estado del usuario',
             error: error.message
         });
     }
 };
 
 /**
- * eliminar categoria 
- * DELETE /api/admin/categorias/:id
- * dolo permite eliminar si no tiene subcategorias ni productos relacionados
+ * eliminar usuario 
+ * DELETE /api/admin/usuarios/:id
  * @param {Object} req request express
  * @param {Object} res request express
  */
-const eliminarCategoria = async (req, res) => {
+const eliminarUsuario = async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
 
-        //buscar categoria
-        const categoria = await categoria.findByPk(id);
-            if (!categoria) {
+        //buscar usuario
+        const usuario = await usuario.findByPk(id);
+            if (!usuario) {
                 return res.status(404).json({
                     success: false,
-                    message: 'categoria no encontrada'
+                    message: 'usuario no encontrado'
                 });
             }
-
-            //validacion verificar que no tenga subcategorias
-            const subcategorias = await subcategoria.count({
-                where: {categoriaId: id}
-            });
-
-            if (subcategorias > 0) {
+            //no permitir eliminar al propio admin
+            if (usuario.id === req.usuario.id) {
                 return res.status(400).json({
                     success: false,
-                    message: `no se puede eliminar la categoria porque tiene ${subcategorias} subcategorias asociadas usa PATCH /api/admin/categorias/:id togle para desactivarla en lugar de eliminar `
+                    message: 'no puedes eliminar tu propia cuenta'
                 });
             }
-
-            //validacion verificar que no tenga productos
-            const productos = await producto.count({
-                where: {categoriaId: id}
-            });
-
-            if (productos > 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: `no se puede eliminar la categoria porque tiene ${productos} productos asociados usa PATCH /api/admin/categorias/:id togle para desactivarla en lugar de eliminar `
-                });
-            }
-
-            //eliminar categoria
-            await categoria.destroy();
+            await usuario.destroy();
 
             //respuesta exitosa 
             res.json({
                 success: true,
-                message: 'categoria eliminada exitosamente'
+                message: 'usuario eliminado exitosamente'
             });
 
     } catch (error) {
-        console.error('error al eilminar categoria', error);
+        console.error('error en eliminarUsuario', error);
         res.status(500).json({
             success: false,
-            message: 'error al eliminar categoria',
+            message: 'error al eliminar usuario',
             error: error.message
         });
     }
 };
 
 /**
- * obtener estadisticas de una categoria 
- * GET /api/admin/categorias/:id/estadisticas
- * retorna
- * total de suubcategorias activas / inactivas
- * total de productos activos / inactivos
- * valor total del inventario
- * stock total
+ * obtener estadisticas de usuarios 
+ * GET /api/admin/usuario/:id/estadisticas
+ * 
  * @param {Object} req request express
  * @param {Object} res request express
  */
-const getEstadisticasCategoria = async (req, res) => {
+const getEstadisticasUsuarios = async (req, res) => {
     try {
-        const {id} = req.params;
-
-        //verificar que la categoria exista
-        const categoria = await categoria.findByPk(id);
-
-        if (!categoria) {
-            return res.status(404).json({
-                success: false,
-                message: 'categoria no encontrada'
-            });
-        }
-
-        //contar subcategorias 
-        const totalSubcategorias = await subcategoria.count({
-            where: {categoriaId: id}
+        //datos de usuarios
+        const totalUsuarios = await usuario.count();
+        const totalClientes = await usuario.count({
+            where: { rol: 'cliente'}
         });
-        const subcategoriasActivas = await subcategoria.count({
-            where: {categoriaId:  id, activo: true}
+        const totalAdmins = await usuario.count({
+            where: { rol: 'administrador'}
         });
-
-        //contar productos
-        const totalProductos = await producto.count({
-            where: {categoriaId: id}
+        const usuariosActivos = await usuario.count({
+            where: { activo: true}
         });
-        const productosActivos = await producto.count({
-            where: {categoriaId:  id, activo: true}
-        });
-
-        //obtener productos para calcular estadisticas
-        const productos = await producto.findAll({
-            where: {categoria: id},
-            attributes: ['precio', 'stock']
-        });
-
-        //calcular estadisticas de inventario
-        let valorTotalInventario = 0;
-        let stockTotal = 0;
-
-        productos.forEach(producto => {
-            valorTotalInventario += parseFloat(producto.precio) * producto.stock;
-            stockTotal += producto.stock;
+        const usuariosInactivos = await usuario.count({
+            where: { activo: false}
         });
 
         //respuesta exitosa
         res.json({
             success: true,
             data: {
-                categoria: {
-                id: categoria.id,
-                nombre: categoria.nombre,
-                activo: categoria.activo,
+                total: totalUsuarios,
+                porRol: {
+                    clientes: totalClientes,
+                    administradores: totalAdmins,
                 },
-                estadisticas: {
-                    Subcategorias: {
-                        total: totalSubcategorias,
-                        activas: subcategoriasActivas,
-                        inactivas: totalSubcategorias - subcategoriasActivas
-                    },
-                    productos: {
-                        total: totalProductos,
-                        activas: productosActivos,
-                        inactivas: totalProductos - productosActivos
-                    },
-                    inventario: {
-                        stockTotal,
-                        valorTotal: valorTotalInventario.toFixed(2) //quitar decimales
-                    }
-                }
+                porEstado: {
+                    activos: usuariosActivos,
+                    inactivos: usuariosInactivos,
+                },
             },
         });
 
     } catch (error) {
-        console.error('error en getEstadisticasCategoria', error);
+        console.error('error en getEstadisticasUsuarios', error);
         res.status(500).json({
             success: false,
             message: 'error al obtener estadisticas',
@@ -479,11 +402,11 @@ const getEstadisticasCategoria = async (req, res) => {
 
 //exportar todos los controladores
 module.exports = {
-    getCategorias,
-    getCategoriasById,
-    crearCategoria,
-    actualizarCategoria,
-    toggleCategoria,
-    eliminarCategoria,
-    getEstadisticasCategoria
+    getUsuarios,
+    getUsuarioById,
+    crearUsuario,
+    actualizarUsuario,
+    toggleUsuario,
+    eliminarUsuario,
+    getEstadisticasUsuarios
 };
