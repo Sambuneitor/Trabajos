@@ -532,7 +532,7 @@ const actualizarEstadoPedido = async (req, res) => {
 
 /**
  * obtener estadisticas de pedidos
- * GETTT /api/admin/pedidos/estadisticas
+ * GET /api/admin/pedidos/estadisticas
  */
 
 const getEstadisticasPedidos = async (req, res) => {
@@ -598,6 +598,7 @@ module.exports = {
     getPedidoById,
     cancelarPedido,
     //admin
+    getAllPedidos,
     actualizarEstadoPedido,
     getEstadisticasPedidos
 };
