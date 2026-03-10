@@ -92,23 +92,23 @@ router.delete('/producto/:id', soloAdministrador, productoController.eliminarPro
 
 
 //rutas de usuario
+//GET /api/admin/usuario/:id/stats
+router.get('/usuarios/:id/stats', usuarioController.getEstadisticasUsuarios);
+
 //GET /api/admin/usuario
 router.get('/usuarios', usuarioController.getUsuarios);
 
 //GET /api/admin/usuario/:id
 router.get('/usuarios/:id', usuarioController.getUsuarioById);
 
-//GET /api/admin/usuario/:id/stats
-router.get('/usuarios/:id/stats', usuarioController.getEstadisticasUsuarios);
-
 //POST /api/admin/usuario
-router.post('/usuarios', usuarioController.crearUsuario);
+router.post('/usuarios', soloAdministrador, usuarioController.crearUsuario);
 
 //PUT /api/admin/usuario/:id
-router.put('/usuarios/:id', usuarioController.actualizarUsuario);
+router.put('/usuarios/:id', soloAdministrador, usuarioController.actualizarUsuario);
 
 //PATCH /api/admin/usuario/:id/toggle desactivar o activar usuario
-router.patch('/usuarios:/:id/toggle', usuarioController.toggleUsuario);
+router.patch('/usuarios:/:id/toggle', soloAdministrador, usuarioController.toggleUsuario);
 
 //DELETE /api/admin/usuario/:id
 router.delete('/usuarios:/:id', soloAdministrador, usuarioController.eliminarUsuario);
@@ -119,11 +119,13 @@ router.delete('/usuarios:/:id', soloAdministrador, usuarioController.eliminarUsu
 //GET /api/admin/pedidos
 router.get('/pedidos', pedidoController.getAllPedidos);
 
-//GET /api/admin/usuario/stats
-router.get('/pedidos:/stats', pedidoController.getEstadisticasPedidos);
+//GET /api/admin/pedidos/:id
+router.get('/pedidos/:id', pedidoController.getPedidoById);
 
-//PUT /api/admin/pedidos/:id
-router.put('/pedidos/:id', pedidoController.actualizarEstadoPedido);
+//GET /api/admin/pedidos/stats
+router.get('/pedidos/stats', pedidoController.getEstadisticasPedidos);
 
+//PUT /api/admin/pedidos/:id/estado
+router.put('/pedidos/:id/estado', pedidoController.actualizarEstadoPedido);
 
-
+module.exports = router;
