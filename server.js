@@ -39,15 +39,22 @@ const PORT = process.env.PORT || 5000;
 //cors permite peticiones dese el frontend
 //configura que los dominios pueden hacer periciones al backend
 
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-    methods: []
-    allowHeaders:
-}))
+app.use (cors ({
+    origin:process.env.FRONDEND_URL || 'http://localhost:3000', ///url del frontend
+    credentials: true, // permitir enviar cookies 
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], //metodos permitidos
+    allowedHeaders:['Content-Type', 'Authorization'], // encabezados permitidos
+}));
+
+/**
+ * express.json() - parse el body de las peticiones en fomaro JSON
+ */
+
+app.use(express.json());
 
 /**
  * express.urlencoded() pasar el body de los formularios
+ * las imagenes estaran disponibles
  */
 
 app.use(express.urlencoded({ extended: true}));
