@@ -17,7 +17,7 @@ const sequelize = new sequelize (
         dialect: "mysql",
 
         //configuaraciones de pool de condiciones 
-
+        //mantiene las conexiones abiertas para mejorar el rendimiento
         pool: {
             max:5,
             min:0,
@@ -34,7 +34,7 @@ const sequelize = new sequelize (
         //opciones adicionales
         define: {
             //timestamps: true crea autom los campos createdAT y updatedAT
-            timestramps: true,
+            timestamps: true,
 
             //true usa snake_case para nombres de las columnas
             underscored: false,

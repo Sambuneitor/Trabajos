@@ -45,7 +45,7 @@ const generateToken = (payload) => {
  * @throws {Error} si el token no es valido o ha expirado
  */
 
-const verifyToken = (tokenHeader) => {
+const verifyToken = (token) => {
     try {
         //jwt.verify() verifica la firma del token y decodifica
         //parametros:
@@ -55,14 +55,14 @@ const verifyToken = (tokenHeader) => {
         return decoded;
         }catch (error) {
 
-          //diferentes tipos de errores
-          if (error.name === 'TokenExpiredError') {
+        //diferentes tipos de errores
+        if (error.name === 'TokenExpiredError') {
             throw new Error('El token ha expirado');
-            } else if (error.name === 'JsonWebTokenError') {
+        } else if (error.name === 'JsonWebTokenError') {
             throw new Error('Token invalido');
-            } else {
-                throw new Error('Error al verificar el token');
-      }
+        } else {
+            throw new Error('Error al verificar el token');
+        }
     }
 };
 
@@ -76,7 +76,7 @@ const verifyToken = (tokenHeader) => {
 
 const extractToken = (authHeader) => {
     // verifica que el header existe y empieza con 'Bearer '
-    if (authHeader && authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer')) {
         // extraer solo el token (quitar 'Bearer ')
         return authHeader.substring(7);
     }

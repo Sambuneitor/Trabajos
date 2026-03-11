@@ -44,6 +44,16 @@ const getProductos = async (req, res) => {
         if (activo !== undefined) where.activo = activo == 'true';
         if (conStock == 'true') where.stock = {[require('sequelize').Op.gt]: 0 };
 
+        if (buscar) {
+            const { Op } = require('sequelize');
+            //op.or busca por nombre o descipcion
+            //Op.like aquivale a un like en sql con comodines para buscar en considencias parciales
+            where[Op.or] = [
+                { nombre: { [Op.like]: `%${buscar}%` }},
+                { descripcion: { [Op.like]: `%${buscar}%` }}
+            ];
+        }
+
         //paginacion
         const offset = (parseInt(pagina) -1) * parseInt(limite);
 
@@ -153,12 +163,12 @@ const getProductoById = async (req, res) => {
  * @param {Object} res response express  
  */
 
-const crearProducto =async (req, res) => {
+const crearProducto = async (req, res) => {
     try {
         const {nombre, descripcion, precio, stock, categoriaId, subcategoriaId} = req.body;
 
         //validcion 1 verificar campos requeridos 
-        if (!nombre || !precio || !categoriaId || !subcategoriaId){
+        if (!nombre || !precio || !categoriaId || !subcategoriaId) {
             return res.status(400).json({
                 success: false,
                 message: 'faltan campos requerios nombre, precio, categoriaId y subcategoriaId'
@@ -409,7 +419,7 @@ const actualizarProducto = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('error en actualizar producto: ', error);
+        console.error('error en actualizarProducto: ', error);
         if (req.file) {
             const rutaImagen = path.join(__dirname, '../uploads', req.file.filename);
             try {
@@ -561,23 +571,23 @@ const actualizarStock = async (req, res) => {
             case 'aumentar':
                 nuevoStock = producto.aumentarStock(cantidadNum);
                 break;
-                case 'reducir':
-                    if (cantidadNum > producto.stock) {
-                        return res.status(400).json({
-                            success: false,
-                            message: `no hay suficiente stock. stock actual: ${producto.stock}`
-                        });
-                    }
-                    nuevoStock = producto.reducirStock(cantidadNum);
-                    break;
-                case 'establecer':
-                    nuevoStock = cantidadNum;
-                    break;
-                default:
+            case 'reducir':
+                if (cantidadNum > producto.stock) {
                     return res.status(400).json({
                         success: false,
-                        message: 'operacion invalida usa aumentar, reducir o establecer'
+                        message: `no hay suficiente stock. stock actual: ${producto.stock}`
                     });
+                }
+                nuevoStock = producto.reducirStock(cantidadNum);
+                break;
+            case 'establecer':
+                nuevoStock = cantidadNum;
+                break;
+            default:
+                return res.status(400).json({
+                    success: false,
+                    message: 'operacion invalida usa aumentar, reducir o establecer'
+                });
         }
 
         producto.stock = nuevoStock;

@@ -27,7 +27,7 @@ if (!fs.existsSync(uploadPath)) {
 }
 
 /**
- * confihuracion de almacenamiento de multer
+ * configuracion de almacenamiento de multer
  * define donde y como se guardaran los archivos
  */
 

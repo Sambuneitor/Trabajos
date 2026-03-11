@@ -54,8 +54,8 @@ const crearPedido = async (req, res) => {
 
         //obtener items del carrito del usuario
 
-        const carritoItems = await carrito.findAll({
-            where: { usuarioId: req.user.usuarioId },
+        const itemsCarrito = await carrito.findAll({
+            where: { usuarioId: req.usuario.usuarioId },
             include: [{
                 model: producto,
                 as: 'producto',
@@ -79,7 +79,7 @@ const crearPedido = async (req, res) => {
         for (const item of itemsCarrito) {
             const producto = item.producto;
 
-            //verificar queee el producto este activo
+            //verificar que el producto este activo
             if (!producto.activo) {
                 erroresValidation.push(`${producto.nombre} ya no esta disponible`);
                 continue;
@@ -95,7 +95,7 @@ const crearPedido = async (req, res) => {
             totalPedido += parseFloat(item.precioUnitario) * item.cantidad;
         }
 
-        //ahi hay errores de validacion retornar
+        //si hay errores de validacion retornar
         if (erroresValidation.length > 0) {
             await t.rollback();
             return res.status(400).json({
@@ -107,7 +107,7 @@ const crearPedido = async (req, res) => {
 
         //crear pedido
         const pedido = await pedido.create({
-            usuarioId: req.user.usuarioId,
+            usuarioId: req.usuario.id,
             total: totalPedido,
             estado: 'pendiente',
             direccionEnvio,
@@ -595,7 +595,7 @@ module.exports = {
     //cliente
     crearPedido,
     getMisPedidos,
-    getPedidoById,
+    getPedidoById, //admin
     cancelarPedido,
     //admin
     getAllPedidos,

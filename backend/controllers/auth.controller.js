@@ -8,9 +8,8 @@
  */
 
 const usuario = require('../models/usuario');
-const { generarToken } = require('../config/jwt');
-const usuario = require('../models/usuario');
-const { asyncWrapProviders } = require('node:async_hooks');
+const { generateToken } = require('../config/jwt');
+
 
 /**
  * obtener todos los usuarios
@@ -88,7 +87,7 @@ const registrar = async (req, res) => {
 
         //respuesta exitosa
         const usuarioRespuesta = nuevoUsuario.toJSON();
-        delete usuarioRespuesta.password; //elimina el ampo de contraseña
+        delete usuarioRespuesta.password; //elimina el campo de contraseña
         res.status(201).json({
             success: true, 
             message: 'usuario registrado exitosamente',
