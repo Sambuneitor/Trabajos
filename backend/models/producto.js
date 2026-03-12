@@ -9,9 +9,6 @@ const { DataTypes } = require('sequelize');
 
 //importar instancia de sequelize
 const { sequelize } = require('../config/database');
-const { table } = require('console');
-const { type } = require('os');
-const { RetryAgent } = require('undici-types');
 
 /**
  * definir modelo de producto
@@ -27,14 +24,14 @@ const producto = sequelize.define('producto', {
     },
 
     nombre: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(200),
         allowNull: false,
         validate:{
             notEmpty : {
                 msg: 'el nombre del producto no puede estar vacio'
             },
             len: {
-                args:[0],
+                args:[3, 200],
                 msg: 'el producto tiene que tener un nombre'
             }
         }
@@ -217,7 +214,7 @@ const producto = sequelize.define('producto', {
 
             //validar que la dubcategoria pertenezca a una categoria
             if (subcategoria.categoriaId !== producto.categoriaId) {
-                throw new error('la subcategoria ni pertenece a la categorira seleccionada');
+                throw new error('la subcategoria no pertenece a la categoria seleccionada');
             }
         },
 
@@ -283,7 +280,7 @@ producto.prototype.reducirStock = async function (cantidad) {
  * @param {number} - cantidad a aumentar
  * @returns {promise<producto>} producto actualizado
  */
-producto.prototype.aumentarStock =async function (cantidad) {
+producto.prototype.aumentarStock = async function (cantidad) {
     this.stock += cantidad;
     return await this.save();
 };

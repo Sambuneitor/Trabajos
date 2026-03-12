@@ -19,14 +19,13 @@ const path = require('path');
 require('dotenv').config();
 
 //importar cofiguracion de la base de datos
-const dbConfig = require('./backend/config/database');
+const dbConfig = require('./config/database');
 
 //importar modelos y adsociaciones
-const { initAssociations } = require('./backend/models')
+const { initAssociations } = require('./models')
 
 //importar seeders
 const { runSeeders } = require('./seeders/adminSeeder');
-const { timeStamp } = require('console');
 
 //crear aplicaciones express
 const app = express();
@@ -40,10 +39,10 @@ const PORT = process.env.PORT || 5000;
 //configura que los dominios pueden hacer periciones al backend
 
 app.use (cors ({
-    origin:process.env.FRONDEND_URL || 'http://localhost:3000', ///url del frontend
+    origin: process.env.FRONDEND_URL || 'http://localhost:3000', ///url del frontend
     credentials: true, // permitir enviar cookies 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], //metodos permitidos
-    allowedHeaders:['Content-Type', 'Authorization'], // encabezados permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // encabezados permitidos
 }));
 
 /**
@@ -67,7 +66,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 //middleware para loggin de peticiones
 //muestra en consola cada peticion que llega al server
 
-if(process.env.NODE_ENV === 'debelopment') {
+if(process.env.NODE_ENV === 'development') {
     app.use((req, res, next) => {
         console.log(`ok ${req.method} ${req.path}`);
         next();
@@ -102,19 +101,19 @@ app.get('/api/health', (req, res) => {
 //rutas de autenticacion
 //incluye registro login, perfil
 
-const authRoutes = require('./backend/routes/auth.routes');
+const authRoutes = require('./routes/auth.routes');
 app.use('/api/auth', authRoutes);
 
 //rutas del administrador
 //requieren autenticacion y rol de administrador
 
-const adminRoutes = require('./backend/routes/admin.routes');
+const adminRoutes = require('./routes/admin.routes');
 app.use('/api/admin', adminRoutes);
 
 //rutas del cliente
 
-const clienteRoutes = require('./backend/routes/clientes.routes');
-app.use('/api/admin', clienteRoutes);
+const clienteRoutes = require('./routes/clientes.routes');
+app.use('/api', clienteRoutes);
 
 //manejo de rutas no encontradas (404)
 

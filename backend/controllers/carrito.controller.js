@@ -9,8 +9,6 @@ const carrito = require('../models/carrito');
 const producto = require('../models/producto');
 const categoria = require('../models/categoria');
 const subcategoria = require('../models/subcategoria');
-const producto = require('../models/producto');
-const { it } = require('node:test');
 
 /**
  * obtener carrito del usuario autenticado
@@ -27,7 +25,7 @@ const getCarrito = async (req, res) => {
                 {
                     model: producto,
                     as:'producto',
-                    attrubutes: ['id', 'nombre', 'desctupcion', 'precio', 'stock', 'imegen', 'activo'],
+                    attrubutes: ['id', 'nombre', 'desctupcion', 'precio', 'stock', 'imagen', 'activo'],
                     include: [
                         {
                             model: categoria,
@@ -46,7 +44,7 @@ const getCarrito = async (req, res) => {
         });
 
         //calcular el total del carrito
-        let totalCarrito = 0;
+        let total = 0;
         itemsCarrito.forEach(item => {
             total += parseFloat(item.precioUnitario) * itemCantidad;
         });
@@ -59,7 +57,7 @@ const getCarrito = async (req, res) => {
                 resumen: {
                     totalItems: itemsCarrito.length,
                     cantidadTotal: itemsCarrito.reduce((sum, item) => sum + item.cantidad, 0),
-                    totalCarrito: total.toFixed(2)
+                    total: total.toFixed(2)
                 }
             }
         });
@@ -165,7 +163,7 @@ const agregarAlCarrito = async (req, res) => {
         }
 
         //crear un nuevo item en el carrito
-        const nuevaCantidad = await carrito.create({
+        const nuevoItem = await carrito.create({
             usuarioId: req.usuario.id,
             productoId,
             cantidad: cantidadNum,

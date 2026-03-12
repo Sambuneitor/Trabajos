@@ -9,7 +9,6 @@ const { DataTypes } = require('sequelize');
 
 //importar instancia de sequelize
 const { sequelize } = require('../config/database');
-const producto = require('./producto');
 
 /**
  * definir modelo carrito
