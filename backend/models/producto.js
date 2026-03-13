@@ -187,11 +187,11 @@ const producto = sequelize.define('producto', {
          * valida que la subcategoria y categoria esten activas 
          */
         beforeCreate: async (producto) => {
-            const categoria = require('./categoria');
-            const subcategoria = require('./subcategoria');
+            const Categoria = require('./categoria');
+            const Subcategoria = require('./subcategoria');
 
             //buscar subcategoria padre
-            const subcategoria = await subcategoria.findByPk(producto.subcategoriaId);
+            const subcategoria = await Subcategoria.findByPk(producto.subcategoriaId);
 
             if (!subcategoria) {
                 throw new Error('la subcategoria seleccionada no existe');
@@ -202,7 +202,7 @@ const producto = sequelize.define('producto', {
             }
 
             //buscar categoria padre
-            const categoria = await categoria.findByPk(producto.categoriaId);
+            const categoria = await Categoria.findByPk(producto.categoriaId);
 
             if (!categoria) {
                 throw new Error('la categoria seleccionada no existe');

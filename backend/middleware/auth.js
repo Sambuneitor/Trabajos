@@ -5,11 +5,9 @@
  */
 
 //importar funciones de JWT
-const jwt = { verifyToken, extractToken } = require("../config/jwt");
-
-const { extractToken, verifyToken} = require('../config/jwt');
+const { extractToken, verifyToken } = require('../config/jwt');
 //importar modelo de usuario
-const usuario = require("../models/usuario");
+const Usuario = require("../models/usuario");
 
 
 //middleware de autenticacion
@@ -47,7 +45,7 @@ const verificarAuth = async (req, res, next) => {
         }
 
         //buscar el usuario en la base de datos 
-        const usuario = await usuario.findById(decoded.id, {
+        const usuario = await Usuario.findById(decoded.id, {
             attributes: { exclude: ['password'] }//no incluir la contraseña en la respuesta
         });
 
@@ -107,11 +105,11 @@ const verificarAuthOpcional = async (req, res, next) => {
 
         try {
             const decoded = verifyToken(token);
-            const usuairo = await usuario.findById(decoded.id, {
+            const usuario = await Usuario.findById(decoded.id, {
                 attributes: { exclude: ['password'] }
             });
 
-            if (usuario && usuairo.activo) {
+            if (usuario && usuiiro.activo) {
                 req.usuairo = usuario;
             } else {
                 req.usuario = null;
@@ -124,7 +122,7 @@ const verificarAuthOpcional = async (req, res, next) => {
         next();
     } catch (error) {
         console.error('error en middleware de autenticacion opcional', error);
-        req.usuairo = null;
+        req.usuario = null;
         next();
     }
 };

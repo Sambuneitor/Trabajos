@@ -42,11 +42,11 @@ const pedido = sequelize.define('pedido', {
 
     // total monto total del pedido
     total: {
-        typra: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
         validate: {
             isDecimal: {
-                msg: 'el total debe ser unn numero decimal valido'
+                msg: 'el total debe ser un numero decimal valido'
             },
             min: {
                 args: [0],

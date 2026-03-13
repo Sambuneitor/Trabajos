@@ -9,7 +9,6 @@
 const Producto = require('../models/producto');
 const Categoria = require('../models/categoria');
 const Subcategoria = require('../models/subcategoria');
-const Categoria = require('../models/categoria');
 
 /**
  * obtener todos los productos al publico

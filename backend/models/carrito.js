@@ -119,10 +119,10 @@ const carrito = sequelize.define('carrito', {
          * valida que este esta activo y teenga stock suficiente 
          */
         beforeCreate: async (itemCarrito) => {
-            const producto = require('./producto');
+            const Producto = require('./producto');
 
             //buscar el producto 
-            const producto = await producto.findByPk(itemCarrito.productoIdId);
+            const producto = await Producto.findByPk(itemCarrito.productoIdId);
 
             if (!producto) {
                 throw new Error('el producto no existe');
@@ -137,7 +137,7 @@ const carrito = sequelize.define('carrito', {
             }
 
             //guardar el precio actual del producto
-            itemCarrito.precioUnitario = producto.precio
+            itemCarrito.precioUnitario = Producto.precio
         },
 
         /**
@@ -147,8 +147,8 @@ const carrito = sequelize.define('carrito', {
         beforeUpdate: async (itemCarrito) => {
 
             if (itemCarrito.changed('cantidad')) {
-                const producto = require('./producto');
-                const producto = await producto.findByPk(itemCarrito.productoId);
+                const Producto = require('./producto');
+                const producto = await Producto.findByPk(itemCarrito.productoId);
 
                 if (!producto) {
                     throw new Error('el producto no existe');
@@ -178,9 +178,9 @@ carrito.prototype.calcularSubtotal = function() {
  * @returns {Promise} item acutualizado *
 */
 carrito.prototype.actualizarCantidad = async function(nuevaCantidad) {
-    const producto = require('./producto');
+    const Producto = require('./producto');
 
-    const producto = await producto.findByPk(this.productoId);
+    const producto = await Producto.findByPk(this.productoId);
 
     if (!producto.haystock(nuevaCantidad)) {
         throw new Error(`stock insuficiente, solo hay: ${producto.stock} unidades disponibles`);
@@ -197,13 +197,13 @@ carrito.prototype.actualizarCantidad = async function(nuevaCantidad) {
  * @returns {Promise<Array>} - items del carrito con productos asociados
  */
 carrito.obtenerCarritoUsuario = async function(usuarioId) {
-    const producto = require('./producto');
+    const Producto = require('./producto');
 
     return await this.findAll({
         where: { usuarioId },
         include: [
             {
-                model: producto,
+                model: Producto,
                 as: 'producto',
             }
         ],

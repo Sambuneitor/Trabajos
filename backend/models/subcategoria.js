@@ -113,12 +113,12 @@ const subcategoria = sequelize.define('subcategoria', {
             const categoria = require('./categoria');
 
             //buscar categoria padre
-            const categoria = await categoria.findByPk(subcategoria.categoriaId);
-            if (!categoria) {
+            const categorias = await categoria.findByPk(subcategoria.categoriaId);
+            if (!categorias) {
                 throw new Error('la categoria seleccionada no existe');
             }
 
-            if (!categoria.activo) {
+            if (!categorias.activo) {
                 throw new Error('no se puede crear una subcategoria en una categoria inactiva');
             }
         },
@@ -133,17 +133,17 @@ const subcategoria = sequelize.define('subcategoria', {
                 console.log(`desactivando categoria: ${subcategoria.nombre}`);
 
                 //importar modelos (aqui para evitar dependencias circulares)
-                const producto = require('./producto');
+                const Producto = require('./producto');
 
                 try {
                     //paso 1 : desactivar los productos de esta subcategoria
-                    const productos = await productos.findAll({
+                    const productos = await Producto.findAll({
                         where: { subcategoriaId: subcategoria.id }
                     });
 
                     for (const producto of productos) {
-                        await producto.update({ activo: false }, { transaction: options.transaction });
-                        console.log(`producto desactivado: ${producto.nombre}`);
+                        await Producto.update({ activo: false }, { transaction: options.transaction });
+                        console.log(`producto desactivado: ${Producto.nombre}`);
                     }
                     console.log(`subcategoria y productos relacionados desactivados correctamente`);
                 } catch (error) {
@@ -165,7 +165,7 @@ const subcategoria = sequelize.define('subcategoria', {
  */
 subcategoria.prototype.contarproductos = async function () {
     const producto = require('./producto');
-    return await producto.count({ where: { subcategoriaId: this.id } });
+    return await Producto.count({ where: { subcategoriaId: this.id } });
 };
 
 /**

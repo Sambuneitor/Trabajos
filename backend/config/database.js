@@ -8,8 +8,8 @@ require('dotenv').config();
 
 //crear instancias de sequelize
 const sequelize = new Sequelize (
-    Process.env.DB_NAME,
-    Process.env.DB_USER,
+    process.env.DB_NAME,
+    process.env.DB_USER,
     process.env.DB_PASSWORD,
     {
         host: process.env.DB_HOST,

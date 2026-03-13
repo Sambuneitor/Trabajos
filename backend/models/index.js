@@ -152,14 +152,14 @@ pedido.belongsTo(usuario, {
 
 pedido.hasMany(detallePedido, { 
     foreignKey: 'pedidoId', //campo que conecta las tablas 
-    as: 'detallePedido', //alias para la relacion
+    as: 'detallesPedido', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un pedido eliminar detalles
     onUpdate: 'CASCADE' //si se actualiza pedido actualizar detalles
 });
 
 detallePedido.belongsTo(pedido, { 
     foreignKey: 'pedidoId', //campo que conecta las tablas 
-    as: 'pedidos', //alias para la relacion
+    as: 'pedido', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un pedido eliminar detalles
     onUpdate: 'CASCADE' //si se actualiza pedido actualizar detalles
 });
@@ -172,7 +172,7 @@ detallePedido.belongsTo(pedido, {
 
 producto.hasMany(detallePedido, { 
     foreignKey: 'productoId', //campo que conecta las tablas 
-    as: 'detallePedido', //alias para la relacion
+    as: 'detallesProducto', //alias para la relacion
     onDelete: 'RESTRICT', //si se elimina un producto no eliminar detalles
     onUpdate: 'CASCADE' //si se actualiza producto actualizar detalles
 });
