@@ -29,7 +29,7 @@ const sequelize = new Sequelize (
         loggin: process.env.NODE_ENV === "development" ? console.log : false,
 
         //zona horaria
-        timezone: '_05:00', //zona horaria de colombia
+        timezone: '-05:00', //zona horaria de colombia
 
         //opciones adicionales
         define: {

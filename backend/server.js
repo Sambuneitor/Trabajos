@@ -26,6 +26,8 @@ const { initAssociations } = require('./models')
 
 //importar seeders
 const { runSeeders } = require('./seeders/adminSeeder');
+const { timeStamp } = require('console');
+const { syncDataBase, testConnection} = require('./config/database') 
 
 //crear aplicaciones express
 const app = express();

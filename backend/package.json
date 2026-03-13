@@ -9,7 +9,7 @@
     "init-db": "node config/createDatabase.js",
     "reset-db": "node config/resetDatabase.js",
     "sedd": "node -e \"require('./seeders/adminSeeder').runSeeders(). then(() => process.exit(0)).catch((err) => {console.error(err) :process.exit(1); })\"",
-    "test": "jest -- detectOpenHandles --forceExit",
+    "test": "jest --detectOpenHandles --forceExit",
     "test-watch": "jets --watch",
     "test-coverage": "jest --coverage"
   },
