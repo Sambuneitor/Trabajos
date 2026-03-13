@@ -8,7 +8,7 @@
  * importar modelos 
  */
 
-const usuario = require('../models/usuario');
+const Usuario = require('../models/usuario');
 
 /**
  * obtener todos los usuarios
@@ -43,7 +43,7 @@ const getUsuarios = async (req, res) => {
         const offset = (parseInt(pagina) -1) * parseInt(limite);
 
         //obtener usuarios sin password
-        const {count, rows: usuarios} = await usuario.findAndCountAll({
+        const {count, rows: usuarios} = await Usuario.findAndCountAll({
             where,
             attributes: { exclude: ['password'] },
             limit: parseInt(limite),
@@ -88,7 +88,7 @@ const getUsuarioById = async (req, res) => {
         const {id} = req.params;
 
         //buscar usuarios
-        const usuario = await usuario.findByPk(id, {
+        const usuario = await Usuario.findByPk(id, {
             attributes: { exclude: ['password'] },
         });
 
@@ -147,7 +147,7 @@ const crearUsuario =async (req, res) => {
         }
 
         //validar email unico 
-        const usuarioExistente = await usuario.findOne({
+        const usuarioExistente = await Usuario.findOne({
             where: {email}
         });
 
@@ -159,7 +159,7 @@ const crearUsuario =async (req, res) => {
         }
 
         //crear usuario
-        const nuevoUsuario = await usuario.create({
+        const nuevoUsuario = await Usuario.create({
             nombre,
             apellido,
             email,
@@ -211,7 +211,7 @@ const actualizarUsuario = async (req, res) => {
         const {nombre, apellido, telefono, direccion, rol} = req.body;
 
         //buscar usuario
-        const usuario = await usuario.findByPk(id);
+        const usuario = await Usuario.findByPk(id);
 
         if (!usuario) {
             return res.status(404).json({
@@ -229,14 +229,14 @@ const actualizarUsuario = async (req, res) => {
         }
 
         //actualizar campos
-        if (nombre !== undefined) usuario.nombre = nombre;
-        if (apellido !== undefined) usuario.apellido = apellido;
-        if (telefono !== undefined) usuario.telefono = telefono;
-        if (direccion !== undefined) usuario.direccion = direccion;
-        if (rol !== undefined) usuario.rol = rol;
+        if (nombre !== undefined) Usuario.nombre = nombre;
+        if (apellido !== undefined) Usuario.apellido = apellido;
+        if (telefono !== undefined) Usuario.telefono = telefono;
+        if (direccion !== undefined) Usuario.direccion = direccion;
+        if (rol !== undefined) Usuario.rol = rol;
 
         //guardar cambios
-        await usuario.save();
+        await Usuario.save();
 
         //respuesta exitosa
         res.json({
@@ -270,7 +270,7 @@ const toggleUsuario = async (req, res) => {
         const {id} = req.params;
 
         //buscar usuairo
-        const usuario = await usuario.findByPk (id);
+        const usuario = await Usuario.findByPk (id);
 
         if (!usuario) {
             return res.status(404).json({
@@ -286,8 +286,8 @@ const toggleUsuario = async (req, res) => {
             });
         }
 
-        usuario.activo = !usuario.activo;
-        await usuario.save();
+        Usuario.activo = !Usuario.activo;
+        await Usuario.save();
 
         res.json({
             success: true,
@@ -360,17 +360,17 @@ const eliminarUsuario = async (req, res) => {
 const getEstadisticasUsuarios = async (req, res) => {
     try {
         //datos de usuarios
-        const totalUsuarios = await usuario.count();
-        const totalClientes = await usuario.count({
+        const totalUsuarios = await Usuario.count();
+        const totalClientes = await Usuario.count({
             where: { rol: 'cliente'}
         });
-        const totalAdmins = await usuario.count({
+        const totalAdmins = await Usuario.count({
             where: { rol: 'administrador'}
         });
-        const usuariosActivos = await usuario.count({
+        const usuariosActivos = await Usuario.count({
             where: { activo: true}
         });
-        const usuariosInactivos = await usuario.count({
+        const usuariosInactivos = await Usuario.count({
             where: { activo: false}
         });
 

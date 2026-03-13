@@ -7,9 +7,9 @@
 /**
  * importar modelos 
  */
-const producto = require('../models/producto');
-const categoria = require('../models/categoria');
-const subcategoria = require('../models/subcategoria');
+const Producto = require('../models/producto');
+const Categoria = require('../models/categoria');
+const Subcategoria = require('../models/subcategoria');
 
 //importar path y ffs para manejo de imagenes
 const path = require('path');
@@ -62,12 +62,12 @@ const getProductos = async (req, res) => {
             where,
             include: [
                 {
-                    model: categoria,
+                    model: Categoria,
                     as: 'categoria',
                     attributes: ['id', 'nombre']
                 },
                 {
-                    model: subcategoria,
+                    model: Subcategoria,
                     as: 'subcategoria',
                     attributes: ['id', 'nombre']
                 }
@@ -78,7 +78,7 @@ const getProductos = async (req, res) => {
         };
 
         //obtener productos y total 
-        const { count, rows: productos } = await producto.findAndCountAll(opciones);
+        const { count, rows: productos } = await Producto.findAndCountAll(opciones);
 
         //respuesta exitosa
         res.json({
@@ -116,15 +116,15 @@ const getProductoById = async (req, res) => {
         const {id} = req.params;
 
         //buscar productos con relacion
-        const producto = await producto.findByPk(id, {
+        const producto = await Producto.findByPk(id, {
             include: [
                 {
-                    model: categoria,
+                    model: Categoria,
                     as: 'categorias',
                     attributes: ['id', 'nombre', 'activo']
                 },
                 {
-                    model: subcategoria,
+                    model: Subcategoria,
                     as: 'subcategoria',
                     attributes: ['id', 'nombre', 'activo']
                 }
@@ -185,7 +185,7 @@ const crearProducto = async (req, res) => {
         } */
 
         //validacion 2 verifica si la categoria existe y esta activa
-        const categoria = await categoria.findByPk(categoriaId);
+        const categoria = await Categoria.findByPk(categoriaId);
         if (!categoria) {
             return res.status(404).json({
                 success: false,
@@ -200,7 +200,7 @@ const crearProducto = async (req, res) => {
         }
 
         //validacion 3 verificar que la subcategoria existe y pertenece a una categoria
-        const subcategoria = await subcategoria.findByPk(subcategoriaId);
+        const subcategoria = await Subcategoria.findByPk(subcategoriaId);
 
         if (!subcategoria) {
             return res.status(404).json({
@@ -242,7 +242,7 @@ const crearProducto = async (req, res) => {
         const imagen = req.file ? req.file.filename : null;
 
         //crear producto
-        const nuevoProducto = await producto.create({
+        const nuevoProducto = await Producto.create({
             nombre,
             descripcion: descripcion || null, 
             precio: parseFloat(precio),
@@ -257,12 +257,12 @@ const crearProducto = async (req, res) => {
         await nuevoProducto.reload({
             include: [
                 {
-                    model: categoria,
+                    model: Categoria,
                     as: 'categoria',
                     attributes: ['id', 'nombre']
                 },
                 {
-                    model: subcategoria,
+                    model: Subcategoria,
                     as: 'subcategoria',
                     attributes: ['id', 'nombre']
                 }
@@ -321,7 +321,7 @@ const actualizarProducto = async (req, res) => {
         const {nombre, descripcion, precio, stock, categoriaId, subcategoriaId, activo} = req.body;
 
         //buscar producto
-        const producto = await producto.findByPk(id);
+        const producto = await Producto.findByPk(id);
 
         if (!producto) {
             return res.status(404).json({
@@ -331,8 +331,8 @@ const actualizarProducto = async (req, res) => {
         }
 
         //verificar si se cambia categoria y subcategoria
-        if (categoriaId && categoriaId !== producto.categoriaId) {
-            const categoria = await categoria.findByPk(categoriaId);
+        if (categoriaId && categoriaId !== Producto.categoriaId) {
+            const categoria = await Categoria.findByPk(categoriaId);
 
             if (!categoria || !categoria.activo) {
                 return res.status(404).json({
@@ -342,8 +342,8 @@ const actualizarProducto = async (req, res) => {
             }
         }
 
-        if (subcategoriaId && subcategoriaId !== producto.subcategoriaId) {
-            const subcategoria = await subcategoria.findByPk(subcategoriaId);
+        if (subcategoriaId && subcategoriaId !== Producto.subcategoriaId) {
+            const subcategoria = await Subcategoria.findByPk(subcategoriaId);
 
             if (!subcategoria || !subcategoria.activo) {
                 return res.status(404).json({
@@ -353,8 +353,8 @@ const actualizarProducto = async (req, res) => {
             }
         }
 
-            const catId = categoriaId || producto.categoriaId;
-            if (!subcategoria.categoriaId !== parseInt(catId)) {
+            const catId = categoriaId || Producto.categoriaId;
+            if (!Subcategoria.categoriaId !== parseInt(catId)) {
                 return res.status(404).json({
                     success: false,
                     message: 'la subcategoria no pertenece a la categoria seleccionada'
@@ -398,16 +398,16 @@ const actualizarProducto = async (req, res) => {
         }
 
         //actualizar campos
-        if (nombre !== undefined) producto.nombre = nombre;
-        if (descripcion !== undefined) producto.descripcion = descripcion;
-        if (precio !== undefined) producto.precio = parseFloat(precio);
-        if (stock !== undefined) producto.stock = parseInt(stock);
-        if (categoriaId !== undefined) producto.categoriaId = parseInt(categoriaId);
-        if (subcategoriaId !== undefined) producto.subcategoriaId = parseInt(subcategoriaId);
-        if (activo !== undefined) producto.activo = activo;
+        if (nombre !== undefined) Producto.nombre = nombre;
+        if (descripcion !== undefined) Producto.descripcion = descripcion;
+        if (precio !== undefined) Producto.precio = parseFloat(precio);
+        if (stock !== undefined) Producto.stock = parseInt(stock);
+        if (categoriaId !== undefined) Producto.categoriaId = parseInt(categoriaId);
+        if (subcategoriaId !== undefined) Producto.subcategoriaId = parseInt(subcategoriaId);
+        if (activo !== undefined) Producto.activo = activo;
 
         //guardar cambios
-        await producto.save();
+        await Producto.save();
 
         //respuesta exitosa
         res.json({
@@ -458,7 +458,7 @@ const toggleProducto = async (req, res) => {
         const {id} = req.params;
 
         //buscar producto
-        const producto = await producto.findByPk(id);
+        const producto = await Producto.findByPk(id);
 
         if (!producto) {
             return res.status(404).json({
@@ -468,7 +468,7 @@ const toggleProducto = async (req, res) => {
         }
 
         producto.activo = !producto.activo;
-        await producto.save();
+        await Producto.save();
 
         //respuesta exitosa
         res.json({
@@ -502,7 +502,7 @@ const eliminarProducto = async (req, res) => {
         const {id} = req.params;
 
         //buscar producto
-        const producto = await producto.findByPk(id);
+        const producto = await Producto.findByPk(id);
             if (!producto) {
                 return res.status(404).json({
                     success: false,
@@ -511,7 +511,7 @@ const eliminarProducto = async (req, res) => {
             }
 
             //el hook beforDestroy se encarga de eliminar la imagen
-            await producto.destroy();
+            await Producto.destroy();
 
             //respuesta exitosa 
             res.json({
@@ -556,7 +556,7 @@ const actualizarStock = async (req, res) => {
                 message: 'la cantidad no puede ser negariva'
             });
         }
-        const producto = await producto.findByPk(id);
+        const producto = await Producto.findByPk(id);
 
         if(!producto) {
             return res.status(404).json({
@@ -591,16 +591,16 @@ const actualizarStock = async (req, res) => {
         }
 
         producto.stock = nuevoStock;
-        await  producto.save();
+        await  Producto.save();
 
         res.json({
             success: true,
             message: `stock ${operacion === 'aumentar' ? 'aumentado' : operacion === 'reducir' ? 'reducido' : 'establecido'} exitosamente`,
             data: {
-                productoId: producto.id,
-                nombre: producto.nombre,
+                productoId: Producto.id,
+                nombre: Producto.nombre,
                 stockAnterior: operacion === 'establecer' ? null : (operacion === 'aumentar' ? producto.stock - cantidadNum : producto.stock + cantidadNum),
-                stockNuevo: producto.stock
+                stockNuevo: Producto.stock
             }
         });
 

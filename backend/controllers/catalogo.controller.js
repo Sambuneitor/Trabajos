@@ -6,11 +6,10 @@
 /**
  * importar modelos 
  */
-const producto = require('../models/producto');
-const categoria = require('../models/categoria');
-const subcategoria = require('../models/subcategoria');
-const categoria = require('../models/categoria');
-const categoria = require('../models/categoria');
+const Producto = require('../models/producto');
+const Categoria = require('../models/categoria');
+const Subcategoria = require('../models/subcategoria');
+const Categoria = require('../models/categoria');
 
 /**
  * obtener todos los productos al publico
@@ -84,17 +83,17 @@ const getProductos = async (req, res) => {
         const offset = (parseInt(pagina) -1) * parseInt(limite);
 
         //consultar productos
-        const opciones = { count, rows: productos } = await producto.findAndCountAll({
+        const productos = { count, rows: productos } = await Producto.findAndCountAll({
             where,
             include: [
                 {
-                    model: categoria,
+                    model: Categoria,
                     as: 'categoria',
                     attributes: ['id', 'nombre'],
                     where: {activo: true}
                 },
                 {
-                    model: subcategoria,
+                    model: Subcategoria,
                     as: 'subcategoria',
                     attributes: ['id', 'nombre'],
                     where: {activo: true}
@@ -141,20 +140,20 @@ const getProductoById = async (req, res) => {
         const { id } = req.params;
 
         //buscar productos activo y si tenen stock
-        const producto = await producto.findOne({
+        const producto = await Producto.findOne({
             where: {
                 id,
                 activo: true,
             },
             include: [
                 {
-                    model: categoria,
+                    model: Categoria,
                     as: 'categorias',
                     attributes: ['id', 'nombre', 'activo'],
                     where: {activo: true}
                 },
                 {
-                    model: subcategoria,
+                    model: Subcategoria,
                     as: 'subcategoria',
                     attributes: ['id', 'nombre', 'activo'],
                     where: {activo: true}
@@ -200,7 +199,7 @@ const getCategorias = async (req, res) => {
         const { Op } = require('sequelize');
 
         //buscar categorias activas
-        const categorias = await categoria.findAll({
+        const categorias = await Categoria.findAll({
             where: {activo: true},
             attributes: ['id', 'nombre', 'descripcion'],
             order: [['nombre', 'ASC']]
@@ -209,7 +208,7 @@ const getCategorias = async (req, res) => {
         //para cada categoria contar productos activos con stock
         const categoriasConConteo = await Promise.all(
             categorias.map(async (categoria) => {
-                const totalProductos = await producto.count({
+                const totalProductos = await Producto.count({
                     where: {
                         categoriaId: categoria.id,
                         activo: true,
@@ -217,7 +216,7 @@ const getCategorias = async (req, res) => {
                     }
                 });
                 return {
-                    ...categoria.toJSON(),
+                    ...Categoria.toJSON(),
                     totalProductos
                 };
             })
@@ -254,7 +253,7 @@ const getSubcategoriasPorCategorias = async (req, res) => {
         const { Op } = require('sequelize');
 
         //verificar que la categoria exista y este activa
-        const categoria = await categoria.findOne({
+        const categoria = await Categoria.findOne({
             where: { id, activo: true},
         });
 
@@ -266,7 +265,7 @@ const getSubcategoriasPorCategorias = async (req, res) => {
         }
 
         //buscar subcategorias activas
-        const subcategorias = await subcategoria.findAll({
+        const subcategorias = await Subcategoria.findAll({
             where: {
                 categoriaId: id,
                 activo: true
@@ -278,7 +277,7 @@ const getSubcategoriasPorCategorias = async (req, res) => {
         //contar productos activos con stock para cada subcategoria
         const subcategoriasConConteo = await Promise.all(
             subcategorias.map(async (subcategoria) => {
-                const totalProductos = await producto.count({
+                const totalProductos = await Producto.count({
                     where: {
                         subcategoriaId: subcategoria.id,
                         activo: true,
@@ -286,7 +285,7 @@ const getSubcategoriasPorCategorias = async (req, res) => {
                     }
                 });
                 return {
-                    ...subcategoria.toJSON(),
+                    ...Subcategoria.toJSON(),
                     totalProductos
                 };
             })
@@ -327,20 +326,20 @@ const getProductosDestacados = async (req, res) => {
         const { Op } = require('sequelize');
 
         //obtener productos mas recientes
-        const categoria = await categoria.findOne({
+        const producto = await Producto.findOne({
             where: {
                 activo: true,
                 stock: { [Op.gt]: 0}
             },
             include: [
                 {
-                    model: categoria,
+                    model: Categoria,
                     as: 'categoria',
                     attributes: ['id', 'nombre'],
                     where: {activo: true}
                 },
                 {
-                    model: subcategoria,
+                    model: Subcategoria,
                     as: 'subcategoria',
                     attributes: ['id', 'nombre'],
                     where: {activo: true}

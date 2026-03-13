@@ -7,7 +7,7 @@
  * importar modelos 
  */
 
-const usuario = require('../models/usuario');
+const Usuario = require('../models/usuario');
 const { generateToken } = require('../config/jwt');
 
 
@@ -51,7 +51,7 @@ const registrar = async (req, res) => {
         }
 
         //validacion 4 verificar que el email no este registrado
-        const usuarioExistente = await usuario.findOne({ where: { email } });
+        const usuarioExistente = await Usuario.findOne({ where: { email } });
         if (usuarioExistente) {
             return res.status(400).json({
                 success: false,
@@ -68,7 +68,7 @@ const registrar = async (req, res) => {
  */
 
         //crear usuario
-        const nuevoUsuario = await usuario.create({
+        const nuevoUsuario = await Usuario.create({
             nombre,
             apellido,
             email,
@@ -130,7 +130,7 @@ const login = async (req, res) => {
 
         //validacion 2: buscar usuario por email
         //necesitamos incluir el password aqui normalmente se excluye por seguridad
-        const usuario = await usuario.scope('withPassword').findOne({
+        const usuario = await Usuario.scope('withPassword').findOne({
             where: { email }
         });
 
@@ -151,7 +151,7 @@ const login = async (req, res) => {
 
         //validacion 4: verificar la contraseña 
         //usamos el metodo comparaPassword del modelo usuario
-        const passwordValida = await usuario.compararPassword(password);
+        const passwordValida = await Usuario.compararPassword(password);
 
         if (!passwordValida) {
             return res.status(401).json({
@@ -167,7 +167,7 @@ const login = async (req, res) => {
         });
 
         //preparar respuesta si password 
-        const usuarioSinPassword = usuario.toJSON();
+        const usuarioSinPassword = Usuario.toJSON();
         delete usuarioSinPassword.password;
 
         //respuesta exitosa
@@ -200,7 +200,7 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
     try {
         //el usuario ya esta en req.usuario
-        const usuario = await usuario.findByPk(req.usuario.id, {
+        const usuario = await Usuario.findByPk(req.usuario.id, {
             attributes: { exclude: ['password']}
         }); 
 
@@ -242,7 +242,7 @@ const updateMe = async (req, res) => {
         const { nombre, apellido, telefono, direccion } = req.body;
 
         //buscar usuario
-        const usuario = await usuario.findByPk(req.usuario.id);
+        const usuario = await Usuario.findByPk(req.usuario.id);
 
         if (!usuario) {
             return res.status(404).json({
@@ -307,7 +307,7 @@ const changePassword = async (req, res) => {
         }
 
         //validacion 3 buscar usuario con password incluido
-        const usuario = await usuario.scope('withPassword').findByPk(req.usuario.id);
+        const usuario = await Usuario.scope('withPassword').findByPk(req.usuario.id);
         if (!usuario) {
             return res.status(400).json({
                 success: false,
@@ -316,7 +316,7 @@ const changePassword = async (req, res) => {
         }
 
         //validacion 4 verificar que la contraseña actual sea correcta
-        const passwordValida = await usuario.compararPassword(passwordActual);
+        const passwordValida = await Usuario.compararPassword(passwordActual);
         if (!passwordValida) {
             return res.status(400).json({
                 success: false,

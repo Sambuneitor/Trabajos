@@ -8,9 +8,9 @@
  * importar modelos 
  */
 
-const categoria = require('../models/categoria');
-const subcategoria = require('../models/subcategoria');
-const producto = require('../models/producto');
+const Categoria = require('../models/categoria');
+const Subcategoria = require('../models/subcategoria');
+const Producto = require('../models/producto');
 
 
 /**
@@ -40,14 +40,14 @@ const getCategorias = async (req, res) => {
         //incluir subcategorias si se solicita 
         if (incluirSubcategorias === 'true') {
             opciones.include == [{
-                model: subcategoria,
+                model: Subcategoria,
                 as: 'subcategorias', // campo del alias para la relacion
                 attributes: ['id', 'nombre', 'descipcion', 'activo'] //campos a incluir de la subcategoria
             }]
         }
 
         //obtener categorias
-        const categorias = await categoria.findAll (opciones);
+        const categorias = await Categoria.findAll (opciones);
 
         //respuesta exitosa
         res.json({
@@ -81,14 +81,14 @@ const getCategoriasById = async (req, res) => {
         const {id} = req.params;
 
         //buscar categorias con subcategorias y contar productos
-        const categoria = await categoria.findByPk(id, {
+        const categoria = await Categoria.findByPk(id, {
             include: [{
-                model: subcategoria,
+                model: Subcategoria,
                 as: 'subcategorias',
                 attributes: ['id', 'nombre', 'descripcion', 'activo']
             },
             {
-                model: producto,
+                model: Producto,
                 as: 'productos',
                 attributes: ['id']
             }]
@@ -103,7 +103,7 @@ const getCategoriasById = async (req, res) => {
         }
 
         //agregar contador de productos
-        const categoriaJSON = categoria.toJSON();
+        const categoriaJSON = Categoria.toJSON();
         categoriaJSON.totalProductos = categoriaJSON.productos.length;
         delete categoriaJSON.productos; //no enviar lista completa solo el contador
 
@@ -146,7 +146,7 @@ const crearCategoria =async (req, res) => {
         }
 
         //validacion 2 verificar que el nombre no exista 
-        const categoriaExistente = await categoria.findOne({where: {nombre}
+        const categoriaExistente = await Categoria.findOne({where: {nombre}
         });
 
         if (categoriaExistente) {
@@ -157,7 +157,7 @@ const crearCategoria =async (req, res) => {
         }
 
         //crear categoria
-        const nuevaCategoria = await categoria.create({
+        const nuevaCategoria = await Categoria.create({
             nombre,
             descripcion: descripcion || null, //si no se proporciona la desccripcion se establece como null
             activo: true
@@ -202,7 +202,7 @@ const actualizarCategoria = async (req, res) => {
         const {nombre, descripcion} = req.body;
 
         //buscar categoria
-        const categoria = await categoria.findByPk(id);
+        const categoria = await Categoria.findByPk(id);
 
         if (!categoria) {
             return res.status(404).json({
@@ -212,8 +212,8 @@ const actualizarCategoria = async (req, res) => {
         }
 
         //validacion 1 si se cambia el nombre verificar que no exista
-        if (nombre && nombre !== categoria.nombre) {
-            const categoriaConMismoNombre = await categoria.findOne({where: {nombre}
+        if (nombre && nombre !== Categoria.nombre) {
+            const categoriaConMismoNombre = await Categoria.findOne({where: {nombre}
             });
 
             if (categoriaConMismoNombre) {
@@ -225,9 +225,9 @@ const actualizarCategoria = async (req, res) => {
         }
 
         //actualizar campos
-        if (nombre !== undefined) categoria.nombre = nombre;
-        if (descripcion !== undefined) categoria.descripcion = descripcion;
-        if (activo !== undefined) categoria.activo = activo;
+        if (nombre !== undefined) Categoria.nombre = nombre;
+        if (descripcion !== undefined) Categoria.descripcion = descripcion;
+        if (activo !== undefined) Categoria.activo = activo;
 
         //guardar cambios
         await categoria.save();
@@ -274,7 +274,7 @@ const toggleCategoria = async (req, res) => {
         const {id} = req.params;
 
         //buscar categoria
-        const categoria = await categoria.findByPk (id);
+        const categoria = await Categoria.findByPk (id);
 
         if (!categoria) {
             return res.status(404).json({
@@ -284,17 +284,17 @@ const toggleCategoria = async (req, res) => {
         }
 
         //alternar estado activo
-        const nuevoEstado = !categoria.activo;
-        categoria.activo = nuevoEstado;
+        const nuevoEstado = !Categoria.activo;
+        Categoria.activo = nuevoEstado;
         
         //guardar cambios
-        await categoria.save();
+        await Categoria.save();
 
         //contar cuantos registros se afectaron
-        const subcategoriasAfectadas = await subcategoria.count({where: {categoriaId: id}
+        const subcategoriasAfectadas = await Subcategoria.count({where: {categoriaId: id}
         });
 
-        const productosAfectados = await producto.count({where: {categoriaId: id}
+        const productosAfectados = await Producto.count({where: {categoriaId: id}
         });
 
         //respuesta exitosa
@@ -332,7 +332,7 @@ const eliminarCategoria = async (req, res) => {
         const {id} = req.params;
 
         //buscar categoria
-        const categoria = await categoria.findByPk(id);
+        const categoria = await Categoria.findByPk(id);
             if (!categoria) {
                 return res.status(404).json({
                     success: false,
@@ -341,7 +341,7 @@ const eliminarCategoria = async (req, res) => {
             }
 
             //validacion verificar que no tenga subcategorias
-            const subcategorias = await subcategoria.count({
+            const subcategorias = await Subcategoria.count({
                 where: {categoriaId: id}
             });
 
@@ -353,7 +353,7 @@ const eliminarCategoria = async (req, res) => {
             }
 
             //validacion verificar que no tenga productos
-            const productos = await producto.count({
+            const productos = await Producto.count({
                 where: {categoriaId: id}
             });
 
@@ -399,7 +399,7 @@ const getEstadisticasCategoria = async (req, res) => {
         const {id} = req.params;
 
         //verificar que la categoria exista
-        const categoria = await categoria.findByPk(id);
+        const categoria = await Categoria.findByPk(id);
 
         if (!categoria) {
             return res.status(404).json({
@@ -409,23 +409,23 @@ const getEstadisticasCategoria = async (req, res) => {
         }
 
         //contar subcategorias 
-        const totalSubcategorias = await subcategoria.count({
+        const totalSubcategorias = await Subcategoria.count({
             where: {categoriaId: id}
         });
-        const subcategoriasActivas = await subcategoria.count({
+        const subcategoriasActivas = await Subcategoria.count({
             where: {categoriaId:  id, activo: true}
         });
 
         //contar productos
-        const totalProductos = await producto.count({
+        const totalProductos = await Producto.count({
             where: {categoriaId: id}
         });
-        const productosActivos = await producto.count({
+        const productosActivos = await Producto.count({
             where: {categoriaId:  id, activo: true}
         });
 
         //obtener productos para calcular estadisticas
-        const productos = await producto.findAll({
+        const productos = await Producto.findAll({
             where: {categoria: id},
             attributes: ['precio', 'stock']
         });
@@ -444,9 +444,9 @@ const getEstadisticasCategoria = async (req, res) => {
             success: true,
             data: {
                 categoria: {
-                id: categoria.id,
-                nombre: categoria.nombre,
-                activo: categoria.activo,
+                id: Categoria.id,
+                nombre: Categoria.nombre,
+                activo: Categoria.activo,
                 },
                 estadisticas: {
                     Subcategorias: {

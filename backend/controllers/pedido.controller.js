@@ -4,13 +4,13 @@
  * requiere autenticacion
  */
 //importar modelos
-const pedido = require('../models/pedido');
-const detallePedido = require('../models/detallePedido');
-const carrito = require('../models/carrito');
-const producto = require('../models/producto');
-const usuario = require('../models/usuario');
-const categoria = require('../models/categoria');
-const subcategoria = require('../models/subcategoria');
+const Pedido = require('../models/pedido');
+const DetallePedido = require('../models/detallePedido');
+const Carrito = require('../models/carrito');
+const Producto = require('../models/producto');
+const Usuario = require('../models/usuario');
+const Categoria = require('../models/categoria');
+const Subcategoria = require('../models/subcategoria');
 
 /**
  * crear pedido desde el carrito (checkout)
@@ -54,7 +54,7 @@ const crearPedido = async (req, res) => {
 
         //obtener items del carrito del usuario
 
-        const itemsCarrito = await carrito.findAll({
+        const itemsCarrito = await Carrito.findAll({
             where: { usuarioId: req.usuario.usuarioId },
             include: [{
                 model: producto,
@@ -106,7 +106,7 @@ const crearPedido = async (req, res) => {
         }
 
         //crear pedido
-        const pedido = await pedido.create({
+        const pedido = await Pedido.create({
             usuarioId: req.usuario.id,
             total: totalPedido,
             estado: 'pendiente',
@@ -124,7 +124,7 @@ const crearPedido = async (req, res) => {
             const producto = item.producto;
             
             //crear detalle
-            const detalle = await detallePedido.create({
+            const detalle = await DetallePedido.create({
                 pedidoId: pedido.id,
                 productoId: producto.id,
                 cantidad: item.cantidad,
@@ -140,7 +140,7 @@ const crearPedido = async (req, res) => {
         }
 
         //vaciar carrito
-        await carrito.destroy({
+        await Carrito.destroy({
             where: { usuarioId: req.usuario.id },
             transaction: t
         });
@@ -149,18 +149,18 @@ const crearPedido = async (req, res) => {
         await t.commit();
 
         //cargar pedido con relaciones
-        await pedido.reload({
+        await Pedido.reload({
             include: [
                 {
-                    model: usuario,
+                    model: Usuario,
                     as: 'usuario',
                     attributes: ['id', 'nombre', 'email']
                 },
                 {
-                    model: detallePedido,
+                    model: DetallePedido,
                     as: 'detalles',
                     include: [{
-                        model: producto,
+                        model: Producto,
                         as: 'producto',
                         attributes: ['id', 'nombre', 'precio', 'imagen']
                     }]
@@ -207,14 +207,14 @@ const getMisPedidos = async(req, res) => {
         const offset = (parseInt(pagina) - 1) * parseInt(limite);
 
         //consultar pedidos
-        const { count, rows: pedidos } = await pedido.findAndCountAll({
+        const { count, rows: pedidos } = await Pedido.findAndCountAll({
             where,
             include: [
                 {
-                    model: detallePedido,
+                    model: DetallePedido,
                     as: 'detalles',
                     include: [{
-                        model: producto,
+                        model: Producto,
                         as: 'producto',
                         attributes: ['id', 'nombre', 'precio', 'imagen']
                     }]
@@ -269,25 +269,25 @@ const getPedidoById = async (req, res) => {
             where,
             include: [
                 {
-                    model: usuario,
+                    model: Usuario,
                     as: 'usuario',
                     attributes: ['id', 'nombre', 'email']
                 },
                 {
-                    model: detallePedido,
+                    model: DetallePedido,
                     as: 'detalles',
                     include: [{
-                        model: producto,
+                        model: Producto,
                         as: 'producto',
                         attributes: ['id', 'nombre', 'precio', 'imagen'],
                         include: [
                             {
-                                model: categoria,
+                                model: Categoria,
                                 as: 'categoria',
                                 attributes: ['id', 'nombre']
                             },
                             {
-                                model: subcategoria,
+                                model: Subcategoria,
                                 as: 'subcategoria',
                                 attributes: ['id', 'nombre']
                             }
@@ -337,16 +337,16 @@ const cancelarPedido = async (req, res) => {
         const { id } = req.params;
 
         //buscar pedido solo los propios pedidos
-        const pedido = await pedido.findOne({
+        const pedido = await Pedido.findOne({
             where: {
                 id,
                 usuarioId: req.usuario.id
             },
             include: [{
-                model: detallePedido,
+                model: DetallePedido,
                 as: 'detalles',
                 include: [{
-                    model: producto,
+                    model: Producto,
                     as: 'producto'
                 }]
             }],
@@ -378,7 +378,7 @@ const cancelarPedido = async (req, res) => {
 
         //actualizar estado del pedido
         pedido.estado = 'cancelado';
-        await pedido.save({ transaction: t });
+        await Pedido.save({ transaction: t });
 
         await t.commit();
 
@@ -420,19 +420,19 @@ const getAllPedidos = async (req, res) => {
         const offset = (parseInt(pagina) - 1) * parseInt(limite);
 
         //consultar pedidos
-        const {count, rows: pedidos } = await pedido.findAndCountAll({
+        const {count, rows: pedidos } = await Pedido.findAndCountAll({
             where,
             include: [
                 {
-                    model: usuario,
+                    model: Usuario,
                     as: 'usuario',
                     attributes: ['id', 'nombre', 'email']
                 },
                 {
-                    model: detallePedido,
+                    model: DetallePedido,
                     as: 'detalles',
                     include: [{
-                        model: producto,
+                        model: Producto,
                         as: 'producto',
                         attributes: ['id', 'nombre', 'imagen']
                     }]
@@ -488,7 +488,7 @@ const actualizarEstadoPedido = async (req, res) => {
         }
 
         //buscar pedido
-        const pedido = await pedido.findByPk(id);
+        const pedido = await Pedido.findByPk(id);
         if (!pedido) {
             return res.status(404).json({
                 success: false,
@@ -498,13 +498,13 @@ const actualizarEstadoPedido = async (req, res) => {
 
         //actualizar estado
         pedido.estado = estado;
-        await pedido.save();
+        await Pedido.save();
 
         //recargar con relaciones
-        await pedido.reload({
+        await Pedido.reload({
             include: [
                 {
-                    model: usuario,
+                    model: Usuario,
                     as: 'usuario',
                     attributes: ['id', 'nombre', 'email']
                 }
@@ -540,10 +540,10 @@ const getEstadisticasPedidos = async (req, res) => {
         const { Op, fn, col } = require('sequelize');
 
         //total de pedidos
-        const totalPedidos = await pedido.count();
+        const totalPedidos = await Pedido.count();
 
         //pedidos estado
-        const pedidosPorEstado = await pedido.findAll({
+        const pedidosPorEstado = await Pedido.findAll({
             attributes: [
                 'estado',
                 [fn('COUNT', col('id')), 'cantidad']
@@ -553,13 +553,13 @@ const getEstadisticasPedidos = async (req, res) => {
         });
 
         //total ventas
-        const totalVentas = await pedido.sum('total');
+        const totalVentas = await Pedido.sum('total');
 
         //pedidos hoy
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
 
-        const pedidosHoy = await pedido.count({
+        const pedidosHoy = await Pedido.count({
             where: {
                 createdAt: { [Op.gte]: hoy } //pedidos ultimos 7 dias
             }

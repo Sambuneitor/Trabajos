@@ -1,13 +1,13 @@
 /**configuracion de la db */
 
 //importar sequelize
-const {sequelize} = require('sequelize');
+const {Sequelize} = require('sequelize');
 
 //importar dotenv para cariables de entorno 
 require('dotenv').config();
 
 //crear instancias de sequelize
-const sequelize = new sequelize (
+const sequelize = new Sequelize (
     Process.env.DB_NAME,
     Process.env.DB_USER,
     process.env.DB_PASSWORD,

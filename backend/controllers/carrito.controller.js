@@ -5,10 +5,10 @@
  */
 
 //importar modelos
-const carrito = require('../models/carrito');
-const producto = require('../models/producto');
-const categoria = require('../models/categoria');
-const subcategoria = require('../models/subcategoria');
+const Carrito = require('../models/carrito');
+const Producto = require('../models/producto');
+const Categoria = require('../models/categoria');
+const Subcategoria = require('../models/subcategoria');
 
 /**
  * obtener carrito del usuario autenticado
@@ -19,21 +19,21 @@ const subcategoria = require('../models/subcategoria');
 const getCarrito = async (req, res) => {
     try {
         //obtener items del carrito con los productos relacionados
-        const itemsCarrito = await carrito.findAll({
+        const itemsCarrito = await Carrito.findAll({
             where: { usuarioId: req.usuario.id },
             include: [
                 {
-                    model: producto,
+                    model: Producto,
                     as:'producto',
                     attrubutes: ['id', 'nombre', 'desctupcion', 'precio', 'stock', 'imagen', 'activo'],
                     include: [
                         {
-                            model: categoria,
+                            model: Categoria,
                             as: 'categoria',
                             attrubutes: ['id', 'nombre']
                         },
                         {
-                            model: subcategoria,
+                            model: Subcategoria,
                             as: 'subcategoria',
                             attrubutes: ['id', 'nombre']
                         },
@@ -98,7 +98,7 @@ const agregarAlCarrito = async (req, res) => {
         }
 
         //validacion 3: producto existe y esta activo
-        const producto = await producto.findByPk(productoId);
+        const producto = await Producto.findByPk(productoId);
         if (!producto) {
             return res.status(404).json({
                 success: false,
@@ -114,7 +114,7 @@ const agregarAlCarrito = async (req, res) => {
         }
 
         //validacion 4: verificar si ya existe en el carrito
-        const itemExistente = await carrito.findOne({
+        const itemExistente = await Carrito.findOne({
             where: {
                 usuarioId: req.usuario.id,
                 productoId
@@ -163,7 +163,7 @@ const agregarAlCarrito = async (req, res) => {
         }
 
         //crear un nuevo item en el carrito
-        const nuevoItem = await carrito.create({
+        const nuevoItem = await Carrito.create({
             usuarioId: req.usuario.id,
             productoId,
             cantidad: cantidadNum,
@@ -173,7 +173,7 @@ const agregarAlCarrito = async (req, res) => {
         //recargar con producto
         await nuevoItem.reload({
             include: [{
-                model: producto,
+                model: Producto,
                 as: 'producto',
                 attrubutes: ['id', 'nombre', 'precio', 'stock', 'imagen']
             }]
@@ -220,13 +220,13 @@ const actualizarItemCarrito = async (req, res) => {
         }
 
         //buscar item del carrito
-        const item = await carrito.findOne({
+        const item = await Carrito.findOne({
             where: {
                 id,
                 usuarioId: req.usuario.id //solo puede modificar su propio carrito
             },
             include: [{
-                model: producto,
+                model: Producto,
                 as: 'producto',
                 attrubutes: ['id', 'nombre', 'precio', 'stock']
             }]
@@ -279,7 +279,7 @@ const eliminarItemCarrito = async (req, res) => {
         const { id } = req.params;
 
         //buscar item
-        const item = await carrito.findOne({
+        const item = await Carrito.findOne({
             where: {
                 id,
                 usuarioId: req.usuario.id
@@ -321,7 +321,7 @@ const eliminarItemCarrito = async (req, res) => {
 const vaciarCarrito = async (req, res) => {
     try {
         //eliminar todos los items del usuario
-        const itemsEliminados = await carrito.destroy({
+        const itemsEliminados = await Carrito.destroy({
             where: { usuarioId: req.usuario.id }
         });
 
