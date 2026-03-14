@@ -6,13 +6,13 @@
 
 //importar todos los modelos 
 
-const usuario = require('./usuario');
-const categoria = require('./categoria');
-const subcategoria = require('./subcategoria');
-const producto = require('./producto');
-const carrito = require('./carrito');
-const pedido = require('./pedido');
-const detallePedido = require('./detallePedido');
+const Usuario = require('./usuario');
+const Categoria = require('./categoria');
+const Subcategoria = require('./subcategoria');
+const Producto = require('./producto');
+const Carrito = require('./carrito');
+const Pedido = require('./pedido');
+const DetallePedido = require('./detallePedido');
 const { PassThrough } = require('stream');
 
 /**
@@ -30,14 +30,14 @@ const { PassThrough } = require('stream');
  * una subcategoria pertenece a una categoria 
  */
 
-categoria.hasMany(subcategoria, { 
+Categoria.hasMany(Subcategoria, { 
     foreignKey: 'categoriaId', //campo que conecta las tablas 
     as: 'subcategoria', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina una categoria eliminar subcategorias
     onUpdate: 'CASCADE' //si se actualiza categoria actualizar subcategorias
 });
 
-subcategoria.belongsTo(categoria, { 
+Subcategoria.belongsTo(Categoria, { 
     foreignKey: 'categoriaId', //campo que conecta las tablas 
     as: 'categoria', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina una categoria eliminar subcategorias
@@ -50,14 +50,14 @@ subcategoria.belongsTo(categoria, {
  * un producto pertenece a una categoria
  */
 
-categoria.hasMany(producto, { 
+Categoria.hasMany(Producto, { 
     foreignKey: 'categoriaId', //campo que conecta las tablas 
     as: 'producto', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina una categoria eliminar producto
     onUpdate: 'CASCADE' //si se actualiza categoria actualizar producto
 });
 
-producto.belongsTo(categoria, { 
+Producto.belongsTo(Categoria, { 
     foreignKey: 'categoriaId', //campo que conecta las tablas 
     as: 'categoria', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina una categoria eliminar producto
@@ -70,14 +70,14 @@ producto.belongsTo(categoria, {
  * un producto pertenece a una subcategoria
  */
 
-subcategoria.hasMany(producto, { 
+Subcategoria.hasMany(Producto, { 
     foreignKey: 'subcategoriaId', //campo que conecta las tablas 
     as: 'producto', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina una subcategoria eliminar producto
     onUpdate: 'CASCADE' //si se actualiza subcategoria actualizar producto
 });
 
-producto.belongsTo(subcategoria, { 
+Producto.belongsTo(Subcategoria, { 
     foreignKey: 'subcategoriaId', //campo que conecta las tablas 
     as: 'subcategoria', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina una subcategoria eliminar producto
@@ -90,14 +90,14 @@ producto.belongsTo(subcategoria, {
  * un carrito pertenece a un usuario 
  */
 
-usuario.hasMany(carrito, { 
+Usuario.hasMany(Carrito, { 
     foreignKey: 'usuarioId', //campo que conecta las tablas 
     as: 'carrito', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un usuario eliminar carrito
     onUpdate: 'CASCADE' //si se actualiza usuario actualizar carrito
 });
 
-carrito.belongsTo(usuario, { 
+Carrito.belongsTo(Usuario, { 
     foreignKey: 'usuarioId', //campo que conecta las tablas 
     as: 'usuario', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un usuario eliminar carrito
@@ -110,14 +110,14 @@ carrito.belongsTo(usuario, {
  * un carrito pertenece a un producto 
  */
 
-producto.hasMany(carrito, { 
+Producto.hasMany(Carrito, { 
     foreignKey: 'productoId', //campo que conecta las tablas 
     as: 'carrito', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un producto eliminar carrito
     onUpdate: 'CASCADE' //si se actualiza producto actualizar carrito
 });
 
-carrito.belongsTo(producto, { 
+Carrito.belongsTo(Producto, { 
     foreignKey: 'productoId', //campo que conecta las tablas 
     as: 'producto', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un producto eliminar carrito
@@ -130,14 +130,14 @@ carrito.belongsTo(producto, {
  * un pedido pertenece a un usuario 
  */
 
-usuario.hasMany(pedido, { 
+Usuario.hasMany(Pedido, { 
     foreignKey: 'usuarioId', //campo que conecta las tablas 
     as: 'pedidos', //alias para la relacion
     onDelete: 'RESTRICT', //si se elimina un usuario no eliminar pedidos
     onUpdate: 'CASCADE' //si se actualiza usuario actualizar pedidos
 });
 
-pedido.belongsTo(usuario, { 
+Pedido.belongsTo(Usuario, { 
     foreignKey: 'usuarioId', //campo que conecta las tablas 
     as: 'usuario', //alias para la relacion
     onDelete: 'RESTRICT', //si se elimina un usuario no eliminar pedidos
@@ -150,14 +150,14 @@ pedido.belongsTo(usuario, {
  * un detalle pertenece a un pedido 
  */
 
-pedido.hasMany(detallePedido, { 
+Pedido.hasMany(DetallePedido, { 
     foreignKey: 'pedidoId', //campo que conecta las tablas 
     as: 'detallesPedido', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un pedido eliminar detalles
     onUpdate: 'CASCADE' //si se actualiza pedido actualizar detalles
 });
 
-detallePedido.belongsTo(pedido, { 
+DetallePedido.belongsTo(Pedido, { 
     foreignKey: 'pedidoId', //campo que conecta las tablas 
     as: 'pedido', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un pedido eliminar detalles
@@ -170,14 +170,14 @@ detallePedido.belongsTo(pedido, {
  * un detalle tiene un producto 
  */
 
-producto.hasMany(detallePedido, { 
+Producto.hasMany(DetallePedido, { 
     foreignKey: 'productoId', //campo que conecta las tablas 
     as: 'detallesProducto', //alias para la relacion
     onDelete: 'RESTRICT', //si se elimina un producto no eliminar detalles
     onUpdate: 'CASCADE' //si se actualiza producto actualizar detalles
 });
 
-detallePedido.belongsTo(producto, { 
+DetallePedido.belongsTo(Producto, { 
     foreignKey: 'productoId', //campo que conecta las tablas 
     as: 'producto', //alias para la relacion
     onDelete: 'RESTRICT', //si se elimina un producto no eliminar detalles
@@ -188,14 +188,14 @@ detallePedido.belongsTo(producto, {
  * relacion muchos a muchos: pedido y producto tiene una relacion muchos a muchos a traves de detalle de pedido
  */
 
-pedido.belongsToMany(producto, { 
+Pedido.belongsToMany(Producto, { 
     through: 'detallePedido', //tabla intermedia
     foreignKey: 'pedidoId', // campo que conecta las tablas
     otherKey: 'productoId', // campo que conecta las tablas
     as: 'productos', //alias para la relacion
 });
 
-producto.belongsToMany(pedido, { 
+Producto.belongsToMany(Pedido, { 
     through: 'detallePedido', //tabla intermedia
     foreignKey: 'productoId', //campo que conecta las tablas 
     otherKey: 'pedidoId', //campo que conecta las tablas
@@ -213,12 +213,12 @@ const initAssociations = () => {
 
 //exportar los modelos
 module.exports = {
-    usuario,
-    categoria,
-    subcategoria,
-    producto,
-    carrito,
-    pedido,
-    detallePedido,
+    Usuario,
+    Categoria,
+    Subcategoria,
+    Producto,
+    Carrito,
+    Pedido,
+    DetallePedido,
     initAssociations
 };

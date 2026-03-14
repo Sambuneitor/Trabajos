@@ -13,10 +13,10 @@
  * - 75 Productos (5 por subcategoría)
  */
 
-const Usuario = require('../models/Usuario');
-const Categoria = require('../models/Categoria');
-const Subcategoria = require('../models/Subcategoria');
-const Producto = require('../models/Producto');
+const Usuario = require('../models/usuario');
+const Categoria = require('../models/categoria');
+const Subcategoria = require('../models/subcategoria');
+const Producto = require('../models/producto');
 const fs = require('fs').promises;
 const path = require('path');
 

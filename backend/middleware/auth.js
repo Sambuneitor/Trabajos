@@ -45,7 +45,7 @@ const verificarAuth = async (req, res, next) => {
         }
 
         //buscar el usuario en la base de datos 
-        const usuario = await Usuario.findById(decoded.id, {
+        const usuario = await Usuario.findByIdk(decoded.id, {
             attributes: { exclude: ['password'] }//no incluir la contraseña en la respuesta
         });
 

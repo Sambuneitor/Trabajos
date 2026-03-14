@@ -79,7 +79,7 @@ const registrar = async (req, res) => {
         });
 
         //generar token JWT con datos del usuario
-        const token = generarToken({
+        const token = generateToken({
             id: nuevoUsuario.id,
             email: nuevoUsuario.email,
             rol: nuevoUsuario.rol
@@ -200,7 +200,7 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
     try {
         //el usuario ya esta en req.usuario
-        const usuario = await Usuario.findByPk(req.usuario.id, {
+        const usuario = await Usuario.findByPk(req.Usuario.id, {
             attributes: { exclude: ['password']}
         }); 
 
@@ -242,7 +242,7 @@ const updateMe = async (req, res) => {
         const { nombre, apellido, telefono, direccion } = req.body;
 
         //buscar usuario
-        const usuario = await Usuario.findByPk(req.usuario.id);
+        const usuario = await Usuario.findByPk(req.Usuario.id);
 
         if (!usuario) {
             return res.status(404).json({
@@ -252,13 +252,13 @@ const updateMe = async (req, res) => {
         }
 
         //actualizar campos
-        if (nombre !== undefined) usuario.nombre = nombre;
-        if (apellido !== undefined) usuario.apellido = apellido;
-        if (telefono !== undefined) usuario.telefono = telefono;
-        if (direccion !== undefined) usuario.direccion = direccion;
+        if (nombre !== undefined) Usuario.nombre = nombre;
+        if (apellido !== undefined) Usuario.apellido = apellido;
+        if (telefono !== undefined) Usuario.telefono = telefono;
+        if (direccion !== undefined) Usuario.direccion = direccion;
 
         //guardar cambios
-        await usuario.save();
+        await Usuario.save();
 
         //respuesta exitosa
         res.json({
@@ -307,7 +307,7 @@ const changePassword = async (req, res) => {
         }
 
         //validacion 3 buscar usuario con password incluido
-        const usuario = await Usuario.scope('withPassword').findByPk(req.usuario.id);
+        const usuario = await Usuario.scope('withPassword').findByPk(req.Usuario.id);
         if (!usuario) {
             return res.status(400).json({
                 success: false,
@@ -326,7 +326,7 @@ const changePassword = async (req, res) => {
 
         //actualizar contraseña
         usuario.password = passwordNueva;
-        await usuario.save();
+        await Usuario.save();
 
         //respuesta exitosa
         res.status(400).json({

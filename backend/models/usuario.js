@@ -71,13 +71,13 @@ const usuario = sequelize.define('usuario', {
     },
 //rol del usuaroi(cliente, auxiliar o admin)
     rol: {
-        type: DataTypes.ENUM('cliente', 'auxiliar', 'admin'), //tres roles disponibles
+        type: DataTypes.ENUM('cliente', 'auxiliar', 'administrador'), //cuatro roles disponibles
         allowNull: false,
         defaultValue: 'cliente',// por defecto es cliente
         validate: {
             isIn: {
-                args: [['cliente', 'auxiliar', 'admin']],
-                msg: 'el rol debe ser cliente, auxiliar o admin'
+                args: [['cliente', 'auxiliar', 'administrador']],
+                msg: 'el rol debe ser cliente, auxiliar o administrador'
             }
         }
     },
