@@ -152,7 +152,7 @@ Pedido.belongsTo(Usuario, {
 
 Pedido.hasMany(DetallePedido, { 
     foreignKey: 'pedidoId', //campo que conecta las tablas 
-    as: 'detallesPedido', //alias para la relacion
+    as: 'detalles', //alias para la relacion
     onDelete: 'CASCADE', //si se elimina un pedido eliminar detalles
     onUpdate: 'CASCADE' //si se actualiza pedido actualizar detalles
 });

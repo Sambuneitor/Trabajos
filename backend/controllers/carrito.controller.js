@@ -25,28 +25,28 @@ const getCarrito = async (req, res) => {
                 {
                     model: Producto,
                     as:'producto',
-                    attrubutes: ['id', 'nombre', 'desctupcion', 'precio', 'stock', 'imagen', 'activo'],
+                    attributes: ['id', 'nombre', 'descripcion', 'precio', 'stock', 'imagen', 'activo'],
                     include: [
                         {
                             model: Categoria,
                             as: 'categoria',
-                            attrubutes: ['id', 'nombre']
+                            attributes: ['id', 'nombre']
                         },
                         {
                             model: Subcategoria,
                             as: 'subcategoria',
-                            attrubutes: ['id', 'nombre']
+                            attributes: ['id', 'nombre']
                         },
                     ]
                 }
             ],
-            order: [['createAt', 'DESC']]
+            order: [['createdAt', 'DESC']]
         });
 
         //calcular el total del carrito
         let total = 0;
         itemsCarrito.forEach(item => {
-            total += parseFloat(item.precioUnitario) * itemCantidad;
+            total += parseFloat(item.precioUnitario) * item.cantidad;
         });
 
         //respuesta exitosa
@@ -139,9 +139,9 @@ const agregarAlCarrito = async (req, res) => {
             //recargar producto
             await itemExistente.reload({
                 include: [{
-                    model: producto,
+                    model: Producto,
                     as: 'producto',
-                    attrubutes: ['id', 'nombre', 'precio', 'stock', 'imagen']
+                    attributes: ['id', 'nombre', 'precio', 'stock', 'imagen']
                 }]
             });
 
@@ -228,7 +228,7 @@ const actualizarItemCarrito = async (req, res) => {
             include: [{
                 model: Producto,
                 as: 'producto',
-                attrubutes: ['id', 'nombre', 'precio', 'stock']
+                attributes: ['id', 'nombre', 'precio', 'stock']
             }]
         });
 

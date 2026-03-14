@@ -14,11 +14,11 @@ const Usuario = require("../models/usuario");
 const verificarAuth = async (req, res, next) => {
     try {
         //paso 1 obtener el token del header authorization
-        const authHeader = req.header = req.headers.authorization;
+        const authHeader = req.headers.authorization;
 
         if (!authHeader) {
             return res.status(401).json({
-                succes: false,
+                success: false,
                 message: 'no se proporciono token de autenticacion'
             });
         }
@@ -28,7 +28,7 @@ const verificarAuth = async (req, res, next) => {
 
         if (!token) {
             return res.status(401).json({
-                succes: false,
+                success: false,
                 message: 'token de autenticacion invalido'
             });
         }
@@ -39,19 +39,19 @@ const verificarAuth = async (req, res, next) => {
             decoded = verifyToken(token);
         } catch (error) {
             return res.status(401).json({
-                succes: false,
+                success: false,
                 message: error.message //token expirado o invalido
             });
         }
 
         //buscar el usuario en la base de datos 
-        const usuario = await Usuario.findByIdk(decoded.id, {
+        const usuario = await Usuario.findByPk(decoded.id, {
             attributes: { exclude: ['password'] }//no incluir la contraseña en la respuesta
         });
 
         if (!usuario) {
             return res.status(401).json({
-                succes: false,
+                success: false,
                 message: 'usuario no encontrado'
             });
         }
@@ -59,13 +59,14 @@ const verificarAuth = async (req, res, next) => {
         //paso 4 verificar que el usuario esta activo
         if (!usuario.activo) {
             return res.status(401).json({
-                succes: false,
+                success: false,
                 message: 'usuario inactivo contacte al administrador'
             });
         }
 
         //paso 5 agregar el usuario al objeto req para uso posterior
         //ahora en los controladores podemos acceder a req.usuario
+        req.usuario = usuario;
 
         //continuar con el siguiente
         next();
@@ -73,7 +74,7 @@ const verificarAuth = async (req, res, next) => {
     } catch (error) {
         console.error ('error en middleware de autenticacion', error);
         return res.status(500).json({
-            succes: false,
+            success: false,
             message: 'error en la verificacion',
             error: error.message
         })
@@ -105,12 +106,12 @@ const verificarAuthOpcional = async (req, res, next) => {
 
         try {
             const decoded = verifyToken(token);
-            const usuario = await Usuario.findById(decoded.id, {
+            const usuario = await Usuario.findByPk(decoded.id, {
                 attributes: { exclude: ['password'] }
             });
 
-            if (usuario && usuiiro.activo) {
-                req.usuairo = usuario;
+            if (usuario && usuario.activo) {
+                req.usuario = usuario;
             } else {
                 req.usuario = null;
             }

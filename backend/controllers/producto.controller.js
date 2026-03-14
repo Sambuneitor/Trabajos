@@ -74,7 +74,7 @@ const getProductos = async (req, res) => {
             ],
             limit: parseInt(limite),
             offset,
-            order: [['nombre', 'ACS']]
+            order: [['nombre', 'ASC']]
         };
 
         //obtener productos y total 
@@ -120,7 +120,7 @@ const getProductoById = async (req, res) => {
             include: [
                 {
                     model: Categoria,
-                    as: 'categorias',
+                    as: 'categoria',
                     attributes: ['id', 'nombre', 'activo']
                 },
                 {
@@ -174,15 +174,6 @@ const crearProducto = async (req, res) => {
                 message: 'faltan campos requerios nombre, precio, categoriaId y subcategoriaId'
             });
         }
-/** 
-        //validacion 2 verificar si la categoria existe
-        const categoria = await categoria.findByPk(categoriaId);
-        if (!categoria) {
-            return res.status(404).json({
-                success: false,
-                message: `no existe la categoria con id ${categoriaId}`
-            });
-        } */
 
         //validacion 2 verifica si la categoria existe y esta activa
         const categoria = await Categoria.findByPk(categoriaId);
@@ -597,10 +588,10 @@ const actualizarStock = async (req, res) => {
             success: true,
             message: `stock ${operacion === 'aumentar' ? 'aumentado' : operacion === 'reducir' ? 'reducido' : 'establecido'} exitosamente`,
             data: {
-                productoId: Producto.id,
-                nombre: Producto.nombre,
+                productoId: producto.id,
+                nombre: producto.nombre,
                 stockAnterior: operacion === 'establecer' ? null : (operacion === 'aumentar' ? producto.stock - cantidadNum : producto.stock + cantidadNum),
-                stockNuevo: Producto.stock
+                stockNuevo: producto.stock
             }
         });
 

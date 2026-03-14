@@ -82,7 +82,7 @@ const getProductos = async (req, res) => {
         const offset = (parseInt(pagina) -1) * parseInt(limite);
 
         //consultar productos
-        const productos = { count, rows: productos } = await Producto.findAndCountAll({
+        const { count, rows: productos } = await Producto.findAndCountAll({
             where,
             include: [
                 {
@@ -100,7 +100,7 @@ const getProductos = async (req, res) => {
             ],
             limit: parseInt(limite),
             offset,
-            order: [['nombre', 'ACS']]
+            order: [['nombre', 'ASC']]
         });
 
         //respuesta exitosa
@@ -147,7 +147,7 @@ const getProductoById = async (req, res) => {
             include: [
                 {
                     model: Categoria,
-                    as: 'categorias',
+                    as: 'categoria',
                     attributes: ['id', 'nombre', 'activo'],
                     where: {activo: true}
                 },
@@ -206,10 +206,10 @@ const getCategorias = async (req, res) => {
 
         //para cada categoria contar productos activos con stock
         const categoriasConConteo = await Promise.all(
-            categorias.map(async (categoria) => {
+            categorias.map(async (Categoria) => {
                 const totalProductos = await Producto.count({
                     where: {
-                        categoriaId: categoria.id,
+                        categoriaId: Categoria.id,
                         activo: true,
                         stock: { [Op.gt]: 0}
                     }
@@ -295,8 +295,8 @@ const getSubcategoriasPorCategorias = async (req, res) => {
             success: true,
             data: {
                 categoria: {
-                    id: categoria.id,
-                    nombre: categoria.nombre
+                    id: Categoria.id,
+                    nombre: Categoria.nombre
                 },
                 subcategorias: subcategoriasConConteo
             }

@@ -23,7 +23,7 @@ const { generateToken } = require('../config/jwt');
 
 const registrar = async (req, res) => {
     try {
-        const {nombre, apellido, email, password, telefono, direccion} = req.query;
+        const {nombre, apellido, email, password, telefono, direccion} = req.body;
 
         //validacion 1 verificar q todos los campos requeridos estan presentes
         if (!nombre || !apellido || !email || !password) {
@@ -150,7 +150,7 @@ const login = async (req, res) => {
         }
 
         //validacion 4: verificar la contraseña 
-        //usamos el metodo comparaPassword del modelo usuario
+        //usamos el metodo compararPassword del modelo usuario
         const passwordValida = await Usuario.compararPassword(password);
 
         if (!passwordValida) {
@@ -200,7 +200,7 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
     try {
         //el usuario ya esta en req.usuario
-        const usuario = await Usuario.findByPk(req.Usuario.id, {
+        const usuario = await Usuario.findByPk(req.usuario.id, {
             attributes: { exclude: ['password']}
         }); 
 
@@ -242,7 +242,7 @@ const updateMe = async (req, res) => {
         const { nombre, apellido, telefono, direccion } = req.body;
 
         //buscar usuario
-        const usuario = await Usuario.findByPk(req.Usuario.id);
+        const usuario = await Usuario.findByPk(req.usuario.id);
 
         if (!usuario) {
             return res.status(404).json({
@@ -252,20 +252,20 @@ const updateMe = async (req, res) => {
         }
 
         //actualizar campos
-        if (nombre !== undefined) Usuario.nombre = nombre;
-        if (apellido !== undefined) Usuario.apellido = apellido;
-        if (telefono !== undefined) Usuario.telefono = telefono;
-        if (direccion !== undefined) Usuario.direccion = direccion;
+        if (nombre !== undefined) usuario.nombre = nombre;
+        if (apellido !== undefined) usuario.apellido = apellido;
+        if (telefono !== undefined) usuario.telefono = telefono;
+        if (direccion !== undefined) usuario.direccion = direccion;
 
         //guardar cambios
-        await Usuario.save();
+        await usuario.save();
 
         //respuesta exitosa
         res.json({
             success: true,
             message: 'perfil actualizado exitosamente',
             data: {
-                usuario: usuario.toJson()
+                usuario: usuario.toJSON()
             }
         });
 
@@ -298,8 +298,8 @@ const changePassword = async (req, res) => {
             });
         }
 
-        //validacion 2 verificar que se proporcionaron ambas contraseñas
-        if (!passwordActual.length < 6 ) {
+        //validacion 2 verificar longitud minima
+        if (passwordActual.length < 6) {
             return res.status(400).json({
                 success: false,
                 message: 'la contraseña actual debe tener al menos 6 caracteres'
@@ -307,7 +307,7 @@ const changePassword = async (req, res) => {
         }
 
         //validacion 3 buscar usuario con password incluido
-        const usuario = await Usuario.scope('withPassword').findByPk(req.Usuario.id);
+        const usuario = await Usuario.scope('withPassword').findByPk(req.usuario.id);
         if (!usuario) {
             return res.status(400).json({
                 success: false,
@@ -326,13 +326,13 @@ const changePassword = async (req, res) => {
 
         //actualizar contraseña
         usuario.password = passwordNueva;
-        await Usuario.save();
+        await usuario.save();
 
         //respuesta exitosa
-        res.status(400).json({
+        res.json({
             success: true,
             message: 'contraseña actualizada exitosamente'
-        })
+        });
 
     } catch (error) {
         console.error('error en changePassword: ', error);

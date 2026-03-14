@@ -54,16 +54,16 @@ router.delete('/cliente/carrito', verificarAuth, carritoController.vaciarCarrito
 
 //rutas de pedidos -cliente
 //POST /api/cliente/pedidos
-router.post('/cliente/pedidos', pedidoController.crearPedido);
+router.post('/cliente/pedidos', verificarAuth, pedidoController.crearPedido);
 
 //GET /api/cliente/pedidos
-router.get('/cliente/pedidos', pedidoController.getMisPedidos);
+router.get('/cliente/pedidos', verificarAuth, pedidoController.getMisPedidos);
 
 //GET /api/cliente/pedidos/:id
-router.get('/cliente/pedidos/:id', pedidoController.getPedidoById);
+router.get('/cliente/pedidos/:id', verificarAuth, pedidoController.getPedidoById);
 
 //PUT /api/cliente/pedidos/:id/cancelar
-router.put('/cliente/pedidos/:id/cancelar', pedidoController.cancelarPedido);
+router.put('/cliente/pedidos/:id/cancelar', verificarAuth, pedidoController.cancelarPedido);
 
 
 module.exports = router;

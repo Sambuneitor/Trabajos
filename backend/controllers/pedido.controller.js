@@ -55,9 +55,9 @@ const crearPedido = async (req, res) => {
         //obtener items del carrito del usuario
 
         const itemsCarrito = await Carrito.findAll({
-            where: { usuarioId: req.usuario.usuarioId },
+            where: { usuarioId: req.usuario.id },
             include: [{
-                model: producto,
+                model: Producto,
                 as: 'producto',
                 attributes: ['id', 'nombre', 'precio', 'stock', 'activo']
             }],
@@ -86,7 +86,7 @@ const crearPedido = async (req, res) => {
             }
 
             //verificar stock suficiente
-            if (itemCantidad > producto.stock) {
+            if (item.cantidad > producto.stock) {
                 erroresValidation.push(`${producto.nombre}: stock insuficiente (disponible: ${producto.stock}, solicitado: ${item.cantidad})`);
                 continue;
             }
@@ -114,7 +114,7 @@ const crearPedido = async (req, res) => {
             telefono,
             metodoPago,
             notasAdicionales
-        }, {transaction: t});
+        }, { transaction: t });
 
         //crear detalles del pedido y actualizar stock
 
@@ -149,7 +149,7 @@ const crearPedido = async (req, res) => {
         await t.commit();
 
         //cargar pedido con relaciones
-        await Pedido.reload({
+        await pedido.reload({
             include: [
                 {
                     model: Usuario,
@@ -222,7 +222,7 @@ const getMisPedidos = async(req, res) => {
             ],
             limit: parseInt(limite),
             offset,
-            order: [['createAt', 'DESC']]
+            order: [['createdAt', 'DESC']]
         });
 
         //respuesta exitosa
@@ -265,7 +265,7 @@ const getPedidoById = async (req, res) => {
         }
 
         //buscar pedido
-        const pedido = await pedido.findOne({
+        const pedido = await Pedido.findOne({
             where,
             include: [
                 {
@@ -378,7 +378,7 @@ const cancelarPedido = async (req, res) => {
 
         //actualizar estado del pedido
         pedido.estado = 'cancelado';
-        await Pedido.save({ transaction: t });
+        await pedido.save({ transaction: t });
 
         await t.commit();
 
@@ -440,7 +440,7 @@ const getAllPedidos = async (req, res) => {
             ],
             limit: parseInt(limite),
             offset,
-            order: [['createAt', 'DESC']]
+            order: [['createdAt', 'DESC']]
         });
 
         //respuesta exitosa
@@ -498,10 +498,10 @@ const actualizarEstadoPedido = async (req, res) => {
 
         //actualizar estado
         pedido.estado = estado;
-        await Pedido.save();
+        await pedido.save();
 
         //recargar con relaciones
-        await Pedido.reload({
+        await pedido.reload({
             include: [
                 {
                     model: Usuario,

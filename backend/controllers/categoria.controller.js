@@ -230,7 +230,7 @@ const actualizarCategoria = async (req, res) => {
         if (activo !== undefined) Categoria.activo = activo;
 
         //guardar cambios
-        await categoria.save();
+        await Categoria.save();
 
         //respuesta exitosa
         res.json({
@@ -365,7 +365,7 @@ const eliminarCategoria = async (req, res) => {
             }
 
             //eliminar categoria
-            await categoria.destroy();
+            await Categoria.destroy();
 
             //respuesta exitosa 
             res.json({

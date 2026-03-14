@@ -122,7 +122,7 @@ const carrito = sequelize.define('carrito', {
             const Producto = require('./producto');
 
             //buscar el producto 
-            const producto = await Producto.findByPk(itemCarrito.productoIdId);
+            const producto = await Producto.findByPk(itemCarrito.productoId);
 
             if (!producto) {
                 throw new Error('el producto no existe');
@@ -137,7 +137,7 @@ const carrito = sequelize.define('carrito', {
             }
 
             //guardar el precio actual del producto
-            itemCarrito.precioUnitario = Producto.precio
+            itemCarrito.precioUnitario = producto.precio
         },
 
         /**

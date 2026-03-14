@@ -21,6 +21,7 @@ const { verificarAuth } = require('../middleware/auth');
 
 //rutas publicas
 router.post('/registrar', registrar);
+router.post('/register', registrar); // alias para tests en inglés
 
 router.post('/login', login);
 
