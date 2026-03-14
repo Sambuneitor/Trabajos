@@ -85,8 +85,8 @@ const carrito = sequelize.define('carrito', {
                 msg: 'el precio debe ser un numero decimal valido'
             },
             min: {
-                arg: [0],
-                msg: 'el precio no puede der negativo'
+                args: [0],
+                msg: 'el precio no puede ser negativo'
             }
         }
     }
@@ -94,8 +94,8 @@ const carrito = sequelize.define('carrito', {
     //opciones del modelo 
 
     tableName: 'carritos',
-    timeStamps: true,
-    //indiced para mejorar las busquedas
+    timestamps: true,
+    //indices para mejorar las busquedas
     indexes: [
         {
             //indice para buscar carrito por usuario
@@ -132,7 +132,7 @@ const carrito = sequelize.define('carrito', {
                 throw new Error('no se puede agregar un producto inactivo al carrito');
             }
 
-            if (!producto.haystock(itemCarrito.cantidad)) {
+            if (!producto.hayStock(itemCarrito.cantidad)) {
                 throw new Error(`stock insuficiente, solo hay: ${producto.stock} unidades disponibles`);
             }
 
@@ -154,7 +154,7 @@ const carrito = sequelize.define('carrito', {
                     throw new Error('el producto no existe');
                 }
 
-                if (!producto.haystock(itemCarrito.cantidad)) {
+                if (!producto.hayStock(itemCarrito.cantidad)) {
                     throw new Error(`stock insuficiente, solo hay: ${producto.stock} unidades disponibles`);
                 }
             }
@@ -182,7 +182,7 @@ carrito.prototype.actualizarCantidad = async function(nuevaCantidad) {
 
     const producto = await Producto.findByPk(this.productoId);
 
-    if (!producto.haystock(nuevaCantidad)) {
+    if (!producto.hayStock(nuevaCantidad)) {
         throw new Error(`stock insuficiente, solo hay: ${producto.stock} unidades disponibles`);
     }
 

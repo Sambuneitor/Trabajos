@@ -41,7 +41,7 @@ const getCategorias = async (req, res) => {
         if (incluirSubcategorias === 'true') {
             opciones.include = [{
                 model: Subcategoria,
-                as: 'subcategorias', // campo del alias para la relacion
+                as: 'subcategoria', // campo del alias para la relacion
                 attributes: ['id', 'nombre', 'descripcion', 'activo'] //campos a incluir de la subcategoria
             }];
         }
@@ -84,12 +84,12 @@ const getCategoriasById = async (req, res) => {
         const categoria = await Categoria.findByPk(id, {
             include: [{
                 model: Subcategoria,
-                as: 'subcategorias',
+                as: 'subcategoria',
                 attributes: ['id', 'nombre', 'descripcion', 'activo']
             },
             {
                 model: Producto,
-                as: 'productos',
+                as: 'producto',
                 attributes: ['id']
             }]
         });
@@ -104,8 +104,9 @@ const getCategoriasById = async (req, res) => {
 
         //agregar contador de productos
         const categoriaJSON = categoria.toJSON();
-        categoriaJSON.totalProductos = categoriaJSON.productos.length;
-        delete categoriaJSON.productos; //no enviar lista completa solo el contador
+        const productos = categoriaJSON.producto || [];
+        categoriaJSON.totalProductos = productos.length;
+        delete categoriaJSON.producto; //no enviar lista completa solo el contador
 
         //respuesta exitosa
         res.json({
@@ -244,7 +245,7 @@ const actualizarCategoria = async (req, res) => {
     } catch (error) {
         console.error('error en actualizar categoria: ', error);
 
-        if (error.name === 'sequelizeValidationError') {
+        if (error.name === 'SequelizeValidationError') {
             return res.status(400).json({
                 success: false,
                 message: 'error de validacion',

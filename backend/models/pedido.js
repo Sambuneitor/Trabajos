@@ -74,23 +74,6 @@ const pedido = sequelize.define('pedido', {
         }
     },
 
-    //productoId ID del producto en el pedido
-    productoId :{
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'productos',
-            key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE', //se elimina el producto del carrito 
-        validate: {
-            notNull: {
-                msg: 'debe epecificar un producto'
-            }
-        }
-    },
-
     //direccion de envio del pedido
     direccionEnvio:{
         type: DataTypes.TEXT,
@@ -139,7 +122,7 @@ const pedido = sequelize.define('pedido', {
 }, {
     //opciones del modelo 
     tableName: 'pedidos',
-    timeStamps: true,
+    timestamps: true,
     //indiced para mejorar las busquedas
     indexes: [
         {
@@ -197,11 +180,8 @@ const pedido = sequelize.define('pedido', {
                 pedido.fechaEnvio = new Date();
                 await pedido.save({hooks: false}); //guardar sin ejecutar hooks
             }
-            //si el estado cambio a entregado guarda la fecha de entrega
-            if (pedido.changed('estado') && pedido.estado === 'entregado' && !pedido.fechaEntrega) {
-                pedido.fechaEntrega = new Date();
-                await pedido.save({hooks: false}); //guardar sin ejecutar hooks
-            }
+            //si el estado cambio a cancelado guarda la fecha de entrega (no aplicable)
+            // Nota: 'entregado' no es un estado valido, usar 'enviado' o agregar si necesario
         },
 
         /**
@@ -218,7 +198,7 @@ const pedido = sequelize.define('pedido', {
  * metodo para cambiar el estado del pedido
  * 
  * @param {string} nuevoEstado - nuevo estado del pedido
- * @returns {number} - subtotal = precio * cantidad
+ * @returns {Promise<pedido>} - pedido actualizado
  */
 
 pedido.prototype.cambiarEstado = async function(nuevoEstado) {
@@ -233,9 +213,9 @@ pedido.prototype.cambiarEstado = async function(nuevoEstado) {
 };
 
 /**
- * metodo para verificar si el pedido puedeser cancelado
- * solo se puedio cancelar si esta en estadio pendiente o pagado
- * @returns {boolean} true si puede cancelarce, false en caso contrario
+ * metodo para verificar si el pedido puede ser cancelado
+ * solo se puede cancelar si esta en estado pendiente o pagado
+ * @returns {boolean} true si puede cancelarse, false en caso contrario
  */
 
 pedido.prototype.puedeSerCancelado = function () {

@@ -56,11 +56,10 @@ const categoria = sequelize.define('categoria', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true
-    }
-
-}, {
+    },
+}, 
+{
     //opciones del modelo
-
     tableName: 'categorias',
     timestamps: true, //crea campos createdAt y updatedAt
 
@@ -78,40 +77,41 @@ const categoria = sequelize.define('categoria', {
                 console.log(`desactivando categoria: ${categoria.nombre}`);
 
                 //importar modelos (aqui para evitar dependencias circulares
-                const subcategoria = require('./subcategoria');
-                const producto = require('./producto');
+                const Subcategoria = require('./subcategoria');
+                const Producto = require('./producto');
 
                 try {
-                    //paso 1 : desactivar subcategorias de esta categoria
-                    const subcategorias = await subcategoria.findAll({
+                        //paso 1 : desactivar subcategorias de esta categoria
+                    const subcategorias = await Subcategoria.findAll({
                         where: { categoriaId: categoria.id }
                     });
 
-                    for (const subcategoria of subcategorias) {
-                        await subcategoria.update({ activo: false }, { transaction: options.transaction });
-                        console.log(`subcategoria desactivada: ${subcategoria.nombre}`);
+                    for (const subcat of subcategorias) {
+                        await subcat.update({ activo: false }, { transaction: options.transaction });
+                        console.log(`subcategoria desactivada: ${subcat.nombre}`);
                     }
 
                     //paso 2 : desactivar productos de esta categoria
-                    const productos = await producto.findAll({
+                    const productos = await Producto.findAll({
                         where: { categoriaId: categoria.id }
                     });
 
-                    for (const producto of productos) {
-                        await producto.update({ activo: false }, { transaction: options.transaction });
-                        console.log(`producto desactivada: ${producto.nombre}`);
+                    for (const prod of productos) {
+                        await prod.update({ activo: false }, { transaction: options.transaction });
+                        console.log(`producto desactivado: ${prod.nombre}`);
                     }
 
-                    console.log(`categoria y elementos relacionados desactivados correctamente`);
-                } catch (error) {
-                    console.error(`error al desactivar elementos relacionados;`, error.message);
-                    throw error; 
+                        console.log(`categoria y elementos relacionados desactivados correctamente`);
+                    } catch (error) {
+                        console.error(`error al desactivar elementos relacionados;`, error.message);
+                        throw error; 
+                    }
                 }
-            }
             //si se activa una categoria, no se activan automaticamente las subcategorias y productos
-        }
-    }
-});
+            },
+        },
+    },
+);
 
 //metodo de instancia 
 /**
@@ -129,7 +129,7 @@ categoria.prototype.contarSubcategorias = async function () {
  * 
  * @return {Promise<number>} numero de productos
  */
-categoria.prototype.contarproductos = async function () {
+categoria.prototype.contarProductos = async function () {
     const producto = require('./producto');
     return await producto.count({ where: { categoriaId: this.id } });
 };

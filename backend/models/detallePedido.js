@@ -10,7 +10,8 @@ const { DataTypes } = require('sequelize');
 
 //importar instancia de sequelize
 const { sequelize } = require('../config/database');
-const { parse } = require('path');
+const { parse } = require("node:path");
+const { group } = require("node:console");
 
 
 /**
@@ -87,8 +88,8 @@ const detallePedido = sequelize.define('detallePedido', {
                 msg: 'el precio debe ser un numero decimal valido'
             },
             min: {
-                arg: [0],
-                msg: 'el precio no puede der negativo'
+                args: [0],
+                msg: 'el precio no puede ser negativo'
             }
         }
     },
@@ -114,8 +115,8 @@ const detallePedido = sequelize.define('detallePedido', {
     //opciones del modelo 
 
     tableName: 'detalle_pedidos',
-    timeStamps: false, //no necesita createdAt/updatedAt
-    //indiced para mejorar las busquedas
+    timestamps: false, //no necesita createdAt/updatedAt
+    //indices para mejorar las busquedas
     indexes: [
         {
             //indice para buscar detalles por pedido

@@ -13,7 +13,6 @@ const Producto = require('./producto');
 const Carrito = require('./carrito');
 const Pedido = require('./pedido');
 const DetallePedido = require('./detallePedido');
-const { PassThrough } = require('stream');
 
 /**
  * definir asociaciones
@@ -105,7 +104,7 @@ Carrito.belongsTo(Usuario, {
 });
 
 /**
- * producto - carrto
+ * producto - carrito
  * un producto tiene muchos carritos 
  * un carrito pertenece a un producto 
  */
@@ -204,7 +203,7 @@ Producto.belongsToMany(Pedido, {
 
 /**
  * exportar funcion de inicializacion 
- * funcion para inicializar todas lsa asociaciones 
+ * funcion para inicializar todas las asociaciones 
  * se llama desde server.js despues de cargar los modelos
  */
 const initAssociations = () => {
