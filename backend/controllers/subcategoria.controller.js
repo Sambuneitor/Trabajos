@@ -204,20 +204,21 @@ const crearSubcategoria =async (req, res) => {
 
         } catch (error) {
             console.error('error en crearSubcategoria:', error);
-            if (error.name === 'swquelizeValidationError'){
-            return res.status (400).json({
+            if (error.name === 'SequelizeValidationError') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'error de validacion',
+                    errors: error.errors.map(e => e.message)
+                });
+            }
+
+            res.status(500).json({
                 success: false,
-                message: 'error de validacion', errors: error.errors.map(e => e.message)
+                message: 'error al crear subcategoria',
+                error: error.message
             });
         }
-
-        res.status(500).json({
-            success: false,
-            message: 'error al crear subcategoria',
-            error: error.message
-        })
-    }
-};
+    };
 
 /**
  * actualizar subcategoria
@@ -262,8 +263,8 @@ const actualizarSubcategoria = async (req, res) => {
         }
 
         //validacion 1 si se cambia el nombre verificar que no exista
-        if (nombre && nombre !== Subcategoria.nombre) {
-            const categoriaFinal = categoriaId || Subcategoria.categoriaId; //si no se cambia la categoria usar la categoria actual
+        if (nombre && nombre !== subcategoria.nombre) {
+            const categoriaFinal = categoriaId || subcategoria.categoriaId; //si no se cambia la categoria usar la categoria actual
 
             const subcategoriaConMismoNombre = await Subcategoria.findOne({
                 where: {
@@ -281,27 +282,27 @@ const actualizarSubcategoria = async (req, res) => {
         }
 
         //actualizar campos
-        if (nombre !== undefined) Subcategoria.nombre = nombre;
-        if (descripcion !== undefined) Subcategoria.descripcion = descripcion;
-        if (categoriaId !== undefined) Subcategoria.categoriaId = categoriaId;
-        if (activo !== undefined) Subcategoria.activo = activo;
+        if (nombre !== undefined) subcategoria.nombre = nombre;
+        if (descripcion !== undefined) subcategoria.descripcion = descripcion;
+        if (categoriaId !== undefined) subcategoria.categoriaId = parseInt(categoriaId);
+        if (activo !== undefined) subcategoria.activo = activo;
 
         //guardar cambios
-        await Subcategoria.save();
+        await subcategoria.save();
 
         //respuesta exitosa
         res.json({
             success: true,
             message: 'subcategoria actualizada exitosamente',
             data: {
-                Categoria
+                subcategoria
             }
         });
 
     } catch (error) {
         console.error('error en actualizar subcategoria: ', error);
 
-        if (error.name === 'sequelizeValidationError') {
+        if (error.name === 'SequelizeValidationError') {
             return res.status(400).json({
                 success: false,
                 message: 'error de validacion',
@@ -345,7 +346,7 @@ const toggleSubcategoria = async (req, res) => {
         subcategoria.activo = nuevoEstado;
         
         //guardar cambios
-        await Subcategoria.save();
+        await subcategoria.save();
 
         //contar cuantos registros se afectaron
         const productosAfectados = await Producto.count({where: {subcategoriaId: id}
@@ -405,7 +406,7 @@ const eliminarSubcategoria = async (req, res) => {
             }
 
             //eliminar subcategoria
-            await Subcategoria.destroy();
+            await subcategoria.destroy();
 
             //respuesta exitosa 
             res.json({
@@ -440,13 +441,13 @@ const getEstadisticasSubcategoria = async (req, res) => {
         const {id} = req.params;
 
         //verificar que la subcategoria exista
-        const subcategoria = await Subcategoria.findByPk(id [{
+        const subcategoria = await Subcategoria.findByPk(id, {
             include: [{
                 model: Categoria,
                 as: 'categoria',
                 attributes: ['id', 'nombre']
             }]
-        }]);
+        });
 
         if (!subcategoria) {
             return res.status(404).json({

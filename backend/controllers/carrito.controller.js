@@ -175,7 +175,7 @@ const agregarAlCarrito = async (req, res) => {
             include: [{
                 model: Producto,
                 as: 'producto',
-                attrubutes: ['id', 'nombre', 'precio', 'stock', 'imagen']
+                attributes: ['id', 'nombre', 'precio', 'stock', 'imagen']
             }]
         });
 

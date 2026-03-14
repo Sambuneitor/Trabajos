@@ -483,7 +483,7 @@ const actualizarEstadoPedido = async (req, res) => {
         if (!estadosValidos.includes(estado)) {
             return res.status(400).json({
                 success: false,
-                message: `estado invalido, opciones: ${estadosValidos.json(',')}`
+                message: `estado invalido, opciones: ${estadosValidos.join(', ')}`
             });
         }
 
@@ -546,7 +546,7 @@ const getEstadisticasPedidos = async (req, res) => {
         const pedidosPorEstado = await Pedido.findAll({
             attributes: [
                 'estado',
-                [fn('COUNT', col('id')), 'cantidad']
+                [fn('COUNT', col('id')), 'cantidad'],
                 [fn('SUM', col('total')), 'totalVentas']
             ],
             group: ['estado']

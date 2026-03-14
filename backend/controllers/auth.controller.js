@@ -151,7 +151,7 @@ const login = async (req, res) => {
 
         //validacion 4: verificar la contraseña 
         //usamos el metodo compararPassword del modelo usuario
-        const passwordValida = await Usuario.compararPassword(password);
+        const passwordValida = await usuario.compararPassword(password);
 
         if (!passwordValida) {
             return res.status(401).json({
@@ -166,8 +166,8 @@ const login = async (req, res) => {
             rol: usuario.rol
         });
 
-        //preparar respuesta si password 
-        const usuarioSinPassword = Usuario.toJSON();
+        //preparar respuesta sin password
+        const usuarioSinPassword = usuario.toJSON();
         delete usuarioSinPassword.password;
 
         //respuesta exitosa
@@ -316,7 +316,7 @@ const changePassword = async (req, res) => {
         }
 
         //validacion 4 verificar que la contraseña actual sea correcta
-        const passwordValida = await Usuario.compararPassword(passwordActual);
+        const passwordValida = await usuario.compararPassword(passwordActual);
         if (!passwordValida) {
             return res.status(400).json({
                 success: false,

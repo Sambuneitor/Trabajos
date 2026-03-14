@@ -39,11 +39,11 @@ const getCategorias = async (req, res) => {
 
         //incluir subcategorias si se solicita 
         if (incluirSubcategorias === 'true') {
-            opciones.include == [{
+            opciones.include = [{
                 model: Subcategoria,
                 as: 'subcategorias', // campo del alias para la relacion
-                attributes: ['id', 'nombre', 'descipcion', 'activo'] //campos a incluir de la subcategoria
-            }]
+                attributes: ['id', 'nombre', 'descripcion', 'activo'] //campos a incluir de la subcategoria
+            }];
         }
 
         //obtener categorias
@@ -103,7 +103,7 @@ const getCategoriasById = async (req, res) => {
         }
 
         //agregar contador de productos
-        const categoriaJSON = Categoria.toJSON();
+        const categoriaJSON = categoria.toJSON();
         categoriaJSON.totalProductos = categoriaJSON.productos.length;
         delete categoriaJSON.productos; //no enviar lista completa solo el contador
 
@@ -133,7 +133,7 @@ const getCategoriasById = async (req, res) => {
  * @param {Object} res response express  
  */
 
-const crearCategoria =async (req, res) => {
+const crearCategoria = async (req, res) => {
     try {
         const {nombre, descripcion} = req.body;
 
@@ -172,11 +172,12 @@ const crearCategoria =async (req, res) => {
             }
         });
 
-        } catch (error) {
-            if (error.name === 'swquelizeValidationError'){
-            return res.status (400).json({
+    } catch (error) {
+        if (error.name === 'SequelizeValidationError') {
+            return res.status(400).json({
                 success: false,
-                message: 'error de validacion', errors: error.errors.map(e => e.message)
+                message: 'error de validacion',
+                errors: error.errors.map(e => e.message)
             });
         }
 
@@ -184,7 +185,7 @@ const crearCategoria =async (req, res) => {
             success: false,
             message: 'error al crear categoria',
             error: error.message
-        })
+        });
     }
 };
 
@@ -199,7 +200,7 @@ const crearCategoria =async (req, res) => {
 const actualizarCategoria = async (req, res) => {
     try {
         const {id} = req.params;
-        const {nombre, descripcion} = req.body;
+        const {nombre, descripcion, activo} = req.body;
 
         //buscar categoria
         const categoria = await Categoria.findByPk(id);
@@ -212,9 +213,8 @@ const actualizarCategoria = async (req, res) => {
         }
 
         //validacion 1 si se cambia el nombre verificar que no exista
-        if (nombre && nombre !== Categoria.nombre) {
-            const categoriaConMismoNombre = await Categoria.findOne({where: {nombre}
-            });
+        if (nombre && nombre !== categoria.nombre) {
+            const categoriaConMismoNombre = await Categoria.findOne({ where: { nombre } });
 
             if (categoriaConMismoNombre) {
                 return res.status(400).json({
@@ -225,12 +225,12 @@ const actualizarCategoria = async (req, res) => {
         }
 
         //actualizar campos
-        if (nombre !== undefined) Categoria.nombre = nombre;
-        if (descripcion !== undefined) Categoria.descripcion = descripcion;
-        if (activo !== undefined) Categoria.activo = activo;
+        if (nombre !== undefined) categoria.nombre = nombre;
+        if (descripcion !== undefined) categoria.descripcion = descripcion;
+        if (activo !== undefined) categoria.activo = activo;
 
         //guardar cambios
-        await Categoria.save();
+        await categoria.save();
 
         //respuesta exitosa
         res.json({
@@ -284,11 +284,11 @@ const toggleCategoria = async (req, res) => {
         }
 
         //alternar estado activo
-        const nuevoEstado = !Categoria.activo;
-        Categoria.activo = nuevoEstado;
+        const nuevoEstado = !categoria.activo;
+        categoria.activo = nuevoEstado;
         
         //guardar cambios
-        await Categoria.save();
+        await categoria.save();
 
         //contar cuantos registros se afectaron
         const subcategoriasAfectadas = await Subcategoria.count({where: {categoriaId: id}
@@ -365,7 +365,7 @@ const eliminarCategoria = async (req, res) => {
             }
 
             //eliminar categoria
-            await Categoria.destroy();
+            await categoria.destroy();
 
             //respuesta exitosa 
             res.json({
@@ -426,7 +426,7 @@ const getEstadisticasCategoria = async (req, res) => {
 
         //obtener productos para calcular estadisticas
         const productos = await Producto.findAll({
-            where: {categoria: id},
+            where: {categoriaId: id},
             attributes: ['precio', 'stock']
         });
 
@@ -444,9 +444,9 @@ const getEstadisticasCategoria = async (req, res) => {
             success: true,
             data: {
                 categoria: {
-                id: Categoria.id,
-                nombre: Categoria.nombre,
-                activo: Categoria.activo,
+                id: categoria.id,
+                nombre: categoria.nombre,
+                activo: categoria.activo,
                 },
                 estadisticas: {
                     Subcategorias: {

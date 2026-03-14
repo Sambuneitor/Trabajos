@@ -142,7 +142,7 @@ const crearUsuario =async (req, res) => {
         if (!['cliente', 'auxiliar', 'administrador'].includes(rol)) {
             return res.status(400).json({
                 success: false,
-                messages: 'rol invalido. debe ser: cliente, auxiliar o administrador'
+                message: 'rol invalido. debe ser: cliente, auxiliar o administrador'
             });
         }
 
@@ -175,19 +175,19 @@ const crearUsuario =async (req, res) => {
             success: true, 
             message: 'usuario creado exitosamente',
             data: {
-                usuario: nuevoUsuario.toJson() //convertir a json para excluir campos sensibles
+                usuario: nuevoUsuario.toJSON() //convertir a json para excluir campos sensibles
             }
         });
 
         } catch (error) {
             console.error('error en crearUsuario', error);
-            if (error.name === 'swquelizeValidationError'){
-            return res.status(400).json({
-                success: false,
-                message: 'error de validacion', 
-                errors: error.errors.map(e => e.message)
-            });
-        }
+            if (error.name === 'SequelizeValidationError'){
+                return res.status(400).json({
+                    success: false,
+                    message: 'error de validacion', 
+                    errors: error.errors.map(e => e.message)
+                });
+            }
 
         res.status(500).json({
             success: false,
@@ -221,7 +221,7 @@ const actualizarUsuario = async (req, res) => {
         }
 
         //validar rol si se proporciona
-        if (rol && ['cliente', 'administrador'].includes(rol)) {
+        if (rol && !['cliente', 'auxiliar', 'administrador'].includes(rol)) {
             return res.status(400).json({
                 success: false,
                 message: 'rol invalido'
@@ -229,21 +229,21 @@ const actualizarUsuario = async (req, res) => {
         }
 
         //actualizar campos
-        if (nombre !== undefined) Usuario.nombre = nombre;
-        if (apellido !== undefined) Usuario.apellido = apellido;
-        if (telefono !== undefined) Usuario.telefono = telefono;
-        if (direccion !== undefined) Usuario.direccion = direccion;
-        if (rol !== undefined) Usuario.rol = rol;
+        if (nombre !== undefined) usuario.nombre = nombre;
+        if (apellido !== undefined) usuario.apellido = apellido;
+        if (telefono !== undefined) usuario.telefono = telefono;
+        if (direccion !== undefined) usuario.direccion = direccion;
+        if (rol !== undefined) usuario.rol = rol;
 
         //guardar cambios
-        await Usuario.save();
+        await usuario.save();
 
         //respuesta exitosa
         res.json({
             success: true,
             message: 'usuario actualizado exitosamente',
             data: {
-                usuario: usuario.toJson()
+                usuario: usuario.toJSON()
             }
         });
 
@@ -286,8 +286,8 @@ const toggleUsuario = async (req, res) => {
             });
         }
 
-        Usuario.activo = !Usuario.activo;
-        await Usuario.save();
+        usuario.activo = !usuario.activo;
+        await usuario.save();
 
         res.json({
             success: true,
@@ -318,7 +318,7 @@ const eliminarUsuario = async (req, res) => {
         const { id } = req.params;
 
         //buscar usuario
-        const usuario = await usuario.findByPk(id);
+        const usuario = await Usuario.findByPk(id);
             if (!usuario) {
                 return res.status(404).json({
                     success: false,

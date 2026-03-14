@@ -61,8 +61,8 @@ const getProductos = async (req, res) => {
             if (precioMax) where.precio[Op.lte] = parseFloat(precioMax);
         }
 
-        //ordenamiento
-        let order;
+        //ordenamiento (valor por defecto: nombre asc)
+        let order = [['nombre', 'ASC']];
         switch (orden) {
             case 'precio_asc':
                 order = [['precio', 'ASC']];
@@ -100,7 +100,7 @@ const getProductos = async (req, res) => {
             ],
             limit: parseInt(limite),
             offset,
-            order: [['nombre', 'ASC']]
+            order
         });
 
         //respuesta exitosa
@@ -284,7 +284,7 @@ const getSubcategoriasPorCategorias = async (req, res) => {
                     }
                 });
                 return {
-                    ...Subcategoria.toJSON(),
+                    ...subcategoria.toJSON(),
                     totalProductos
                 };
             })
@@ -295,8 +295,8 @@ const getSubcategoriasPorCategorias = async (req, res) => {
             success: true,
             data: {
                 categoria: {
-                    id: Categoria.id,
-                    nombre: Categoria.nombre
+                    id: categoria.id,
+                    nombre: categoria.nombre
                 },
                 subcategorias: subcategoriasConConteo
             }
@@ -324,8 +324,8 @@ const getProductosDestacados = async (req, res) => {
         const { limite = 8 } = req.query;
         const { Op } = require('sequelize');
 
-        //obtener productos mas recientes
-        const producto = await Producto.findOne({
+        //obtener productos mas recientes (destacados)
+        const productos = await Producto.findAll({
             where: {
                 activo: true,
                 stock: { [Op.gt]: 0}
@@ -352,7 +352,7 @@ const getProductosDestacados = async (req, res) => {
         res.json({
             success: true,
             data: {
-                producto
+                productos
             }
         });
 
