@@ -111,7 +111,7 @@ const crearPedido = async (req, res) => {
             total: totalPedido,
             estado: 'pendiente',
             direccionEnvio,
-            telefono,
+            telefonoContacto: telefono,
             metodoPago,
             notasAdicionales
         }, { transaction: t });

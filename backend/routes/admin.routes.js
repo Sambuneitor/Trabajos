@@ -69,26 +69,26 @@ router.delete('/subcategorias/:id', soloAdministrador, subcategoriaController.el
 
 
 //rutas de producto
-//GET /api/admin/producto
-router.get('/producto', productoController.getProductos);
+//GET /api/admin/productos
+router.get('/productos', productoController.getProductos);
 
-//GET /api/admin/producto/:id
-router.get('/producto/:id', productoController.getProductoById);
+//GET /api/admin/productos/:id
+router.get('/productos/:id', productoController.getProductoById);
 
-//POST /api/admin/producto
-router.post('/producto', productoController.crearProducto);
+//POST /api/admin/productos
+router.post('/productos', productoController.crearProducto);
 
-//PUT /api/admin/producto/:id
-router.put('/producto/:id', productoController.actualizarProducto);
+//PUT /api/admin/productos/:id
+router.put('/productos/:id', productoController.actualizarProducto);
 
-//PATCH /api/admin/producto/:id/toggle desactivar o activar producto
-router.patch('/producto:/:id/toggle', productoController.toggleProducto);
+//PATCH /api/admin/productos/:id/toggle desactivar o activar producto
+router.patch('/productos/:id/toggle', productoController.toggleProducto);
 
-//PATCH /api/admin/producto/:id/stock
-router.patch('/producto:/:id/stock', productoController.actualizarStock);
+//PATCH /api/admin/productos/:id/stock
+router.patch('/productos/:id/stock', productoController.actualizarStock);
 
-//DELETE /api/admin/producto/:id
-router.delete('/producto/:id', soloAdministrador, productoController.eliminarProducto);
+//DELETE /api/admin/productos/:id
+router.delete('/productos/:id', soloAdministrador, productoController.eliminarProducto);
 
 
 //rutas de usuario
@@ -107,11 +107,11 @@ router.post('/usuarios', soloAdministrador, usuarioController.crearUsuario);
 //PUT /api/admin/usuario/:id
 router.put('/usuarios/:id', soloAdministrador, usuarioController.actualizarUsuario);
 
-//PATCH /api/admin/usuario/:id/toggle desactivar o activar usuario
-router.patch('/usuarios:/:id/toggle', soloAdministrador, usuarioController.toggleUsuario);
+//PATCH /api/admin/usuarios/:id/toggle desactivar o activar usuario
+router.patch('/usuarios/:id/toggle', soloAdministrador, usuarioController.toggleUsuario);
 
-//DELETE /api/admin/usuario/:id
-router.delete('/usuarios:/:id', soloAdministrador, usuarioController.eliminarUsuario);
+//DELETE /api/admin/usuarios/:id
+router.delete('/usuarios/:id', soloAdministrador, usuarioController.eliminarUsuario);
 
 
 

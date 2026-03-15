@@ -216,8 +216,10 @@ process.on('unhandledRejection', (err) => {
     process.exit(1);
 });
 
-//iniciar servidor
-startServer();
+//iniciar servidor solo si es el archivo principal
+if (require.main === module) {
+    startServer();
+}
 
 //exportar app para testing
 module.exports = app;
